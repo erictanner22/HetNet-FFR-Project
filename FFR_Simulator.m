@@ -1,5 +1,6 @@
 %**************************************************************************
 % Filename: FFR_Simulator.m
+% Group Name: GTW-E
 % Date: 03/17/2020
 % Description: Script used to simulate Fractional Frequency Reuse(FFR)
 % medthods for HetNet applications. Four FFR algorithms are modeled to
