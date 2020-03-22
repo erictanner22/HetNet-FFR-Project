@@ -20,13 +20,11 @@
 BER     = 10^-6;         % Target Bit Error Rate(BER)
 alpha   = -1.5/log(BER); % Constant for target BER
 deltaf  = 15e3;          % Subcarrier spacing (Hz)
-CH_BW   = 5e6;           % Channel Bandwidth (Hz)
+CH_BW   = 20e6;          % Channel Bandwidth (Hz)
 m_users = 180;           % Macrocell Users
 f_users = 180;           % Femtocell Users
 Num_SC  = 300;           % Number of subcarriers
-MC_TxP  = [15 22 20];    % Macrocell Base Station Transmit Power
-                         % FFR: 15,22 W
-                         % w/oFFR: 20 W
+MC_TxP  = [10 15 20];    % Macrocell Base Station Transmit Power
 FC_TxP  = 20e-3;         % Femtocell Base Station Transmit Power
 No_PSD  = -174;          % Noise Power Spectral Density (dBm/Hz)
 M       = 0;             % Macrocell M 
