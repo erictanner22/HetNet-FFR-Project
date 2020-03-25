@@ -51,8 +51,8 @@ wall_type = 1;      % Selects wall type from array of wall loss vector
                     % hard coded to 1(light internal) for now, will 
                     % implement selector code later.
                     
-PL_outdoor = 28.0 + 35*log10(d);
-PL_indoor  = 38.5 + 20*log10(d)+Lwalls(wall_type);
+PL_outdoor = 28.0 + 35*log10(d_vec);
+PL_indoor  = 38.5 + 20*log10(d_vec)+Lwalls(wall_type);
 PL_vec = [PL_outdoor PL_indoor];
 
 PL_type = 1;        % Selects PL type being either indoor or outdoor.
@@ -95,4 +95,6 @@ Ch_Gain = 10^(-PL_vec(PL_type)/10);
 %--------------------------------------------------------------------------
 % Figures/Plots
 %--------------------------------------------------------------------------
+
+
 
