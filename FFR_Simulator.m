@@ -62,7 +62,23 @@ PL_type = 1;        % Selects PL type being either indoor or outdoor.
 Ch_Gain = 10^(-PL_vec(PL_type)/10);
 
 
+% % (PMk = PM/Nk) From ref paper 12, page 3: 
+% PMk = MC_TxP/Num_SC; 
+% PFk = FC_TxP/Num_SC; 
 
+% Summation of M neighboring Macro-cell Power & Gain products on sub-carrier k
+sigma_PMp_GMp = 0; % Initialize to zero
+for m=1:(m_users-1)
+    sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP*Ch_Gain);
+end
+
+% Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
+sigma_PF_GF = 0; % Initialize to zero
+for m=1:(f_users-1)
+    sigma_PF_GF = sigma_PF_GF + (FC_TxP*Ch_Gain);
+end
+% SINR equation for a given Macro-cell on sub-carrier k
+SINRmk = (MC_TxP*Ch_Gain)/(No_PSD*deltaf + sigma_PMp_GMp + sigma_PF_GF);
 
 %--------------------------------------------------------------------------
 % OSFFR Code (Reference:11)
