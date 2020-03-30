@@ -45,7 +45,7 @@ f       = 0;             % Femtocell user f
 %--------------------------------------------------------------------------
 % FFR-3 Code FFR-3  (Reference:10) 
 %--------------------------------------------------------------------------
-d_vec  = (1:5:100); % Distance from base station to user in meters
+d_vec  = 100;       % Distance from base station to user in meters
 Lwalls = [7 10 15]; % Loss through walls [light internal, internal, external]
 wall_type = 1;      % Selects wall type from array of wall loss vector
                     % hard coded to 1(light internal) for now, will 
@@ -59,17 +59,16 @@ PL_type = 1;        % Selects PL type being either indoor or outdoor.
                     % hard coded to 1(outdoor) for now, will implement selector code
                     % later.
 
-Ch_Gain = 10^(-PL_vec(PL_type)/10);
+Ch_Gain = 10^-(PL_vec(PL_type)/10);
 
+MC_TxP = MC_TxP(1);
 
-% % (PMk = PM/Nk) From ref paper 12, page 3: 
-% PMk = MC_TxP/Num_SC; 
-% PFk = FC_TxP/Num_SC; 
+MC_TxP_W = 10^(MC_TxP/10);
 
 % Summation of M neighboring Macro-cell Power & Gain products on sub-carrier k
 sigma_PMp_GMp = 0; % Initialize to zero
 for m=1:(m_users-1)
-    sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP*Ch_Gain);
+    sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Ch_Gain);
 end
 
 % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
@@ -77,8 +76,13 @@ sigma_PF_GF = 0; % Initialize to zero
 for m=1:(f_users-1)
     sigma_PF_GF = sigma_PF_GF + (FC_TxP*Ch_Gain);
 end
+
 % SINR equation for a given Macro-cell on sub-carrier k
-SINRmk = (MC_TxP*Ch_Gain)/(No_PSD*deltaf + sigma_PMp_GMp + sigma_PF_GF);
+SINRmk = (MC_TxP_W*Ch_Gain)/(No_PSD*deltaf + sigma_PMp_GMp + sigma_PF_GF);
+
+
+% Capacity of macro user m on sub-carrier k
+Cmk = deltaf*log2(1+alpha*SINRmk);
 
 %--------------------------------------------------------------------------
 % OSFFR Code (Reference:11)
