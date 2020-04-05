@@ -59,11 +59,14 @@ PL = PL_vec(PL_type);
 %--------------------------------------------------------------------------
 % FFR-3 Code FFR-3  (Reference:10)
 %--------------------------------------------------------------------------
+
+
+%-------------------------------------------
+% Macrocell - SINR, Capacity, and Throughput
+%-------------------------------------------
 idx = 0;
 Nm_vec = 5:5:200;
 for Num_Mc = Nm_vec
-    
-    idx = idx+1;
     
     Ch_Gain = 10^-(PL/10);
     
@@ -80,16 +83,13 @@ for Num_Mc = Nm_vec
     
     % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
     sigma_PF_GF = 0; % Initialize to zero
-    for f=1:(Nf-1)
+    %for f=1:(Nf-1)
+    for f=1:(Num_Mc)
         sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Ch_Gain);
     end
     
     % SINR equation for a given Macro-cell on sub-carrier k
     SINRmk = (MC_TxP_W*Ch_Gain)/(10^((No_PSD*deltaf)/10) + sigma_PMp_GMp + sigma_PF_GF);
-    
-    % NOTE: Needs more work.
-    % % SINR equation for a given Femto-cell on sub-carrier k
-    % SINRfk = (FC_TxP_W*Ch_Gain)/(10^((No_PSD*deltaf)/10) + sigma_PMp_GMp + sigma_PF_GF);
     
     % Capacity of macro user m on sub-carrier k
     Cmk = deltaf*log2(1+alpha*SINRmk);
@@ -100,8 +100,47 @@ for Num_Mc = Nm_vec
         Tm = Tm + Cmk;
     end
     
+    % Store the throughput into the vector (vector used for plotting)
+    idx = idx+1;
     Tm_vec(idx) = Tm;
+    
 end
+
+%-------------------------------------------
+% Femtocell - SINR, Capacity, and Throughput
+%-------------------------------------------
+% idx = 0;
+% Nm_vec = 5:5:200;
+% for Num_Mc = Nm_vec
+%     
+%     idx = idx+1;
+%     
+%     Ch_Gain = 10^-(PL/10);
+%     
+%     MC_TxP = MC_TxP(1);
+%     MC_TxP_W = 10^(MC_TxP/10);
+%     
+%     FC_TxP_W = 10^(FC_TxP/10);
+%     
+%     % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
+%     sigma_PMp_GMp = 0; % Initialize to zero
+%     for m=1:(Num_Mc-1)
+%         sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Ch_Gain);
+%     end
+%     
+%     % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
+%     sigma_PF_GF = 0; % Initialize to zero
+%     for f=1:(Nf-1)
+%         sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Ch_Gain);
+%     end
+%     
+%     % NOTE: Needs more work.
+%     % % SINR equation for a given Femto-cell on sub-carrier k
+%     % SINRfk = (FC_TxP_W*Ch_Gain)/(10^((No_PSD*deltaf)/10) + sigma_PMp_GMp + sigma_PF_GF);
+%     
+% 
+% end
+
 
 %--------------------------------------------------------------------------
 % OSFFR Code (Reference:11)
