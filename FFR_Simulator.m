@@ -30,26 +30,16 @@ Num_SC  = Num_RB*SCpRB;  % Number of subcarriers
 MC_TxP  = [10 15 20];    % Macrocell Base Station Transmit Power
 FC_TxP  = 20e-3;         % Femtocell Base Station Transmit Power
 No_PSD  = -174;          % Noise Power Spectral Density (dBm/Hz)
-Nm      = 7;             % Number of Macrocells
-Nf      = 210;           % Number of Femtocells
+Num_Mc  = 7;             % Number of Macrocells
+Num_Fc  = 30;            % Number of Femtocells per macrocell
+T_Num_Fc  = 210;         % Total Number of Femtocells
+Num_RB  = 100;           % Number of Resource Blocks
+SB_Sect = 4;             % Subbands per sector
 d_vec  = 5;              % Distance from base station to user in meters
 Lwalls = [7 10 15];      % Loss through walls [light internal, internal, external]
 wall_type = 1;           % Selects wall type from array of wall loss vector
                          % hard coded to 1(light internal) for now, will 
                          % implement selector code later.
-
-                         
-
-PL_outdoor = 28.0 + 35*log10(d_vec);
-PL_indoor  = 38.5 + 20*log10(d_vec)+Lwalls(wall_type);
-PL_vec = [PL_outdoor PL_indoor];
-PL_type = 1;        % Selects PL type being either indoor or outdoor.
-                    % hard coded to 1(outdoor) for now, will implement selector code
-                    % later.
-PL = PL_vec(PL_type);
-       
-
-
 
 %**************************************************************************
 % FFR-3SL Code (Proposed Paper)
@@ -97,7 +87,8 @@ for Nf=Nf_vec
     % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
     sigma_PF_GF = 0; % Initialize to zero
     for f=1:(Num_Fc)
-        d = round(rand*(2*Mc_rad));
+        %d = round(rand*(2*Mc_rad));
+        d = 500;
         PL_outdoor = 28.0 + 35*log10(d);
         PL = PL_outdoor;
         Gain = 10^-(PL/10);
@@ -116,6 +107,7 @@ for Nf=Nf_vec
     Tm = 0; % Initialize to zero
     for m=1:m_users
         Beta_km = round(rand);
+        Beta_km = 1; 
         Tm = Tm + Cmk * Beta_km;
     end
     
@@ -167,5 +159,5 @@ end
 
 figure; 
 plot(Nf_vec,Tm_vec, 'o');
-xlabel('Number of Macro-cells');
+xlabel('Number of Femto-cells');
 ylabel('Throughput (bps)');
