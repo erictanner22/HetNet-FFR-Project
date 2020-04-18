@@ -3,14 +3,11 @@
 % Group Name: GTW-E
 % Date: 03/17/2020
 % Description: Script used to simulate Fractional Frequency Reuse(FFR)
-% medthods for HetNet applications. Four FFR algorithms are modeled to
-% analyze performance tradeoffs between algorithm approaches. 
+% medthods for HetNet applications. FFR algorithm is modeled to
+% analyze performance tradeoffs. 
 %
 % FFR Algorithms:
 %                FFR-3SL (Proposed Paper) 
-%                FFR-3  (Reference:10) 
-%                OSFFR  (Reference:11)
-%                FFR-3R (Reference:12) 
 %
 %**************************************************************************
 
@@ -123,29 +120,6 @@ end
 
 
 
-
-
-%**************************************************************************
-% FFR-3 Code FFR-3  (Reference:10)
-%**************************************************************************
-
-
-
-
-%**************************************************************************
-% OSFFR Code (Reference:11)
-%**************************************************************************
-
-
-
-
-
-
-
-
-%**************************************************************************
-% FFR-3R Code FFR-3R (Reference:12)
-%**************************************************************************
 
 
 
