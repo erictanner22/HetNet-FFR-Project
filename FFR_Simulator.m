@@ -18,14 +18,15 @@ BER     = 10^-6;                % Target Bit Error Rate(BER)
 alpha   = -1.5/log(BER);        % Constant for target BER
 delta_f  = 15e3;                % Subcarrier spacing (Hz)
 CH_BW   = 20e6;                 % Channel Bandwidth (Hz)
-Mc_rad  = 500;                  % Macrocell radius(m)
+macro_radius = 500;             % Macrocell radius(m)
+femto_radius = 30;              % femtocell radius(m)
 m_users = 150;                  % Macrocell Users
 f_users = 150;                  % Femtocell Users
 SCpRB   = 12;                   % Sub-carriers per resource block
 Num_RB  = 100;                  % Total number of resource blocks
 Num_SC  = Num_RB*SCpRB;         % Number of subcarriers
 transmitPower_macro = 20;       % Macrocell transmit power in Watts
-%MC_TxP  = [10 15 20];          % Macrocell Base Station Transmit Power
+MC_TxP  = [10 15 20];           % Macrocell Base Station Transmit Power
 transmitPower_femto = 20e-3;	% Femtocell Base Station Transmit Power in Watts
 transmitPower_mue   = 10e-3;    % MUE transmit power (ASSUMPTION because the paper doesn't cite one)
 Noise_PSD  = -174;              % Noise Power Spectral Density (dBm/Hz)
@@ -95,7 +96,7 @@ for Nf=Nf_vec
         % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
         for f=1:(Num_Fc)
             % Distance to any interferring femtocell will be 60 - 470m
-            d_femto = round(rand*(470) + (2*Femto_radius));
+            d_femto = round(rand*(470) + (2*femto_radius));
             PL_femto = 28.0 + 35*log10(d_femto);
             Gain = 10^-(PL_femto/10);
             sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
@@ -105,13 +106,13 @@ for Nf=Nf_vec
     
     % Calculate channel gain (NOTE: Removing the Xsigma and the |H|
     % Rayleigh Gaussian distribution).
-    d_user = round(rand*(Macro_radius));
+    d_user = round(rand*(macro_radius));
     PL_user = 28.0 + 35*log10(d_user);
     Ch_Gain_W = 10^(-PL_user/10);
     
     % SINR equation for a given Macro-cell on sub-carrier k
     % NOTE: this is equation 4 from the paper
-    SINRmk = (MC_TxP_W*Ch_Gain_W)/(10^((No_PSD*deltaf)/10) + sigma_PMp_GMp + sigma_PF_GF);
+    SINRmk = (MC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*deltaf)/10) + sigma_PMp_GMp + sigma_PF_GF);
     
     % Capacity of macro user m on sub-carrier k
     Cmk = deltaf*log2(1+alpha*SINRmk);
