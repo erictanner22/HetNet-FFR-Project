@@ -26,9 +26,9 @@ SCpRB   = 12;                   % Sub-carriers per resource block
 Num_RB  = 100;                  % Total number of resource blocks
 Num_SC  = Num_RB*SCpRB;         % Number of subcarriers
 transmitPower_macro = 20;       % Macrocell transmit power in Watts
-MC_TxP  = [10 15 20];           % Macrocell Base Station Transmit Power
+MC_TxP_vec  = [10 15 20];       % Macrocell Base Station Transmit Power
 transmitPower_femto = 20e-3;	% Femtocell Base Station Transmit Power in Watts
-transmitPower_mue   = 0.1;      % MUE transmit power (ASSUMPTION because the paper doesn't cite one)
+transmitPower_mue   = 1;        % MUE transmit power (ASSUMPTION because the paper doesn't cite one)
 Noise_PSD  = -174;              % Noise Power Spectral Density (dBm/Hz)
 Num_Mc  = 7;                    % Number of Macrocells
 Num_Fc  = 30;                   % Number of Femtocells per macrocell
@@ -66,21 +66,12 @@ for Nf=Nf_vec
     Num_Mc = 7;
     
     % Convert Macrocell power to watts
-    MC_TxP = MC_TxP(1);
+    MC_TxP = MC_TxP_vec(3);
     MC_TxP_W = 10^(MC_TxP/10);
     
     % Convert Femtocell power to watts
-    FC_TxP_W = 10^(FC_TxP/10);
+    FC_TxP_W = 10^(transmitPower_femto/10);
     
-    
-    % d_vec = [
-    %     866  %B->A
-    %     866  %B->C
-    %     1500 %B->D
-    %     1732 %B->E
-    %     1500 %B->F
-    %     866  %B->G
-    %     ];
     
     % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
     % Equation 4 - Denomonator middle summation
@@ -96,7 +87,8 @@ for Nf=Nf_vec
         % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
         for f=1:(Num_Fc)
             % Distance to any interferring femtocell will be 60 - 470m
-            d_femto = round(rand*(470) + (2*femto_radius));
+            %d_femto = round(rand*(470) + (2*femto_radius));
+            d_femto = 470;
             PL_femto = 28.0 + 35*log10(d_femto);
             Gain = 10^-(PL_femto/10);
             sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
@@ -106,16 +98,17 @@ for Nf=Nf_vec
     
     % Calculate channel gain (NOTE: Removing the Xsigma and the |H|
     % Rayleigh Gaussian distribution).
-    d_user = round(rand*(macro_radius));
+    %d_user = round(rand*(macro_radius));
+    d_user = 30;
     PL_user = 28.0 + 35*log10(d_user);
     Ch_Gain_W = 10^(-PL_user/10);
     
     % SINR equation for a given Macro-cell on sub-carrier k
     % NOTE: this is equation 4 from the paper
-    SINRmk = (MC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*deltaf)/10) + sigma_PMp_GMp + sigma_PF_GF);
+    SINRmk = (MC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*delta_f)/10) + sigma_PMp_GMp + sigma_PF_GF);
     
     % Capacity of macro user m on sub-carrier k
-    Cmk = deltaf*log2(1+alpha*SINRmk);
+    Cmk = delta_f*log2(1+alpha*SINRmk);
     
     % Calculate Throughput of the Macro-cell across all m users
     Tm = 0; % Initialize to zero
@@ -129,6 +122,12 @@ for Nf=Nf_vec
     Tm_vec(idx) = Tm;
     
 end
+
+
+
+
+
+
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % vvv Teresa's Editions vvv
@@ -155,6 +154,8 @@ for total_femto_count = femtocell_array
     CG_mue = 10^-(PL_mue/10);
 
     % numerator of the SINR equation
+    % **NOTE From Eric: I read throught the paper and the references and this
+    % power needs to be the macrocell transmit power. 
     numerator = transmitPower_mue * CG_mue;
 
     % multiply noise spectral density by the subcarrier spacing
