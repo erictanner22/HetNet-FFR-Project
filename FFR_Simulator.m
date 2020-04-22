@@ -138,8 +138,10 @@ end
 % assume MUE is assigned to 8 subcarriers
 
 % 1x30 array for holding all throughput values - intialize all to 0
-throughput_macro_array = zeros(1,30);
-femtocell_array = 1:30;
+throughput_macro_array = zeros(1,210);
+femto_distances = zeros(1,210);
+mue_distances   = zeros(1,1050);
+femtocell_array = 1:210;
 
 % increment total femtocells for graphing
 % Only include femtocells within macrocell A
@@ -149,11 +151,69 @@ for total_femto_count = femtocell_array
     % increment
     total_throughput = 0;
     
-    % Loop through all MUEs in this cell
-    for mue = 1:150
+    % multiply noise spectral density by the subcarrier spacing and convert
+    % to Watts
+    denominator = 10^((Noise_PSD * delta_f)/10);
+
+    % calculate macrocell interference
+    % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
+    sigma_Pkm_GkmM = 0; % Initialize to zero
+    % loop from 1 to total macrocells-1 because we aren't counting the cell
+    % we are in
+    for m=1:(Num_Mc-1)
+        % assuming macrocell A, all other towers are 866 m away
+        d_macro = 866;
+        % outdoor pathloss - equation (2) from paper
+        PL_macro = 28.0 + 35*log10(d_macro);
+
+        % equation (3) from paper
+        CG_macro = 10^-(PL_macro/10);
+
+        % Add up all the interferers
+        sigma_Pkm_GkmM = sigma_Pkm_GkmM + (transmitPower_macro*CG_macro);
+    end
+
+    % add the macrocell interferers to the denom 
+    denominator = denominator + sigma_Pkm_GkmM;
+
+    % femtocell interference
+    % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
+    sigma_PkF_GkmF = 0; % Initialize to zero
+
+    % Only include femtocells within macrocell A
+    % TODO: how to calculate distances to femtocells in neighboring macrocells
+    for f=1:total_femto_count
+           
+        % if this femto distance hasn't been populated yet, populate it
+        if femto_distances(f) == 0
+            % choose a random distance within this macrocell
+        % TODO: create an array from 1-30 within each macrocell of random,
+        % non-repeating distances?
+        % randomize femtocell radius for entirety of network radius
+            femto_distances(f) = randi([1, 1299]);
+        end
         
-        % randomly assign it a distance between 0 and 500 (macrocell radius) (Monte Carlo Sim)
-        d_mue = randi([1, 500]);
+        d_femto = femto_distances(f);
+        
+        PL_femto = 28.0 + 35*log10(d_femto);
+        CG_femto = 10^-(PL_femto/10);
+        sigma_PkF_GkmF = sigma_PkF_GkmF + (transmitPower_femto*CG_femto);
+    end
+
+    % add the macrocell interferers to the denom 
+    denominator = denominator + sigma_PkF_GkmF;
+    
+    % Loop through all MUEs in the network
+    for mue = 1:1050
+        
+        % if this femto distance hasn't been populated yet, populate it
+        if mue_distances(mue) == 0
+            % choose a random distance within the entire network
+            mue_distances(mue) = randi([1, 1299]);
+        end
+        
+        d_mue = mue_distances(mue);
+       
         % Calculate for ONE subcarrier
         % assign the MUE to subcarriers (a 2D array of Beta?)
         % calculate the PL of the MUE based on that distance
@@ -167,50 +227,6 @@ for total_femto_count = femtocell_array
         % power needs to be the macrocell transmit power. 
         numerator = transmitPower_macro * CG_mue;
 
-        % multiply noise spectral density by the subcarrier spacing
-        denominator = 10^((Noise_PSD * delta_f)/10);
-
-
-        % calculate macrocell interference
-        % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
-        sigma_Pkm_GkmM = 0; % Initialize to zero
-        % loop from 1 to total macrocells-1 because we aren't counting the cell
-        % we are in
-        for m=1:(Num_Mc-1)
-            % assuming macrocell A, all other towers are 866 m away
-            d_macro = 866;
-            % outdoor pathloss - equation (2) from paper
-            PL_macro = 28.0 + 35*log10(d_macro);
-
-            % equation (3) from paper
-            CG_macro = 10^-(PL_macro/10);
-
-            % Add up all the interferers
-            sigma_Pkm_GkmM = sigma_Pkm_GkmM + (transmitPower_macro*CG_macro);
-        end
-
-        % add the macrocell interferers to the denom 
-        denominator = denominator + sigma_Pkm_GkmM;
-
-        % femtocell interference
-        % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
-        sigma_PkF_GkmF = 0; % Initialize to zero
-
-        % Only include femtocells within macrocell A
-        % TODO: how to calculate distances to femtocells in neighboring macrocells
-        for f=1:total_femto_count
-            % choose a random distance within this macrocell
-            % TODO: create an array from 1-30 within each macrocell of random,
-            % non-repeating distances?
-            d_femto = randi([1, 500]);
-            PL_femto = 28.0 + 35*log10(d_femto);
-            CG_femto = 10^-(PL_femto/10);
-            sigma_PkF_GkmF = sigma_PkF_GkmF + (transmitPower_femto*CG_femto);
-        end
-
-        % add the macrocell interferers to the denom 
-        denominator = denominator + sigma_PkF_GkmF;
-
         % combine values into SINR
         SINR_km = numerator / denominator;
 
@@ -222,16 +238,8 @@ for total_femto_count = femtocell_array
         % (because 8 of the Beta values will be 1 and we are summing over all
         % subcarriers)
         throughput_macro = channelCapacity_macro * 8;
-
-        if throughput_macro == Inf 
-            test = 0;
-        end
         
         total_throughput = total_throughput + throughput_macro;
-    end
-    
-    if total_throughput == Inf 
-        test = 0;
     end
         
     % assign the throughput for this femtocell increment to the array
