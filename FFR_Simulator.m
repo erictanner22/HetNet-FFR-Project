@@ -14,7 +14,7 @@
 %----------------------------------------------------
 % Common Sim Variables
 %----------------------------------------------------
-BER     = 10^-6;                % Target Bit Error Rate(BER)
+BER     = 10^-5;                % Target Bit Error Rate(BER)
 alpha   = -1.5/log(BER);        % Constant for target BER
 delta_f  = 15e3;                % Subcarrier spacing (Hz)
 CH_BW   = 20e6;                 % Channel Bandwidth (Hz)
@@ -87,8 +87,7 @@ for Nf=Nf_vec
         % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
         for f=1:(Num_Fc)
             % Distance to any interferring femtocell will be 60 - 470m
-            %d_femto = round(rand*(470) + (2*femto_radius));
-            d_femto = 470;
+            d_femto = round(rand*(470) + (2*femto_radius));
             PL_femto = 28.0 + 35*log10(d_femto);
             Gain = 10^-(PL_femto/10);
             sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
@@ -105,7 +104,8 @@ for Nf=Nf_vec
     
     % SINR equation for a given Macro-cell on sub-carrier k
     % NOTE: this is equation 4 from the paper
-    SINRmk = (MC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*delta_f)/10) + sigma_PMp_GMp + sigma_PF_GF);
+    SINRmk = 10*log10((MC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*delta_f)/10) + sigma_PMp_GMp + sigma_PF_GF));
+    %SINRmk = (MC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*delta_f)/10) + sigma_PMp_GMp + sigma_PF_GF);
     
     % Capacity of macro user m on sub-carrier k
     Cmk = delta_f*log2(1+alpha*SINRmk);
@@ -113,9 +113,11 @@ for Nf=Nf_vec
     % Calculate Throughput of the Macro-cell across all m users
     Tm = 0; % Initialize to zero
     for m=1:m_users
-        Beta_km = round(rand);
-        Beta_km = 1; 
-        Tm = Tm + Cmk * Beta_km;
+        for k=1:Num_SC
+            Beta_km = round(rand);
+            Beta_km = 1;
+            Tm = Tm + Cmk * Beta_km;
+        end
     end
     
     idx = idx+1;
