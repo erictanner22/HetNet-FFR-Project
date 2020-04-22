@@ -136,8 +136,10 @@ end
 % assume MUE is assigned to 8 subcarriers
 
 % 1x30 array for holding all throughput values - intialize all to 0
-throughput_macro_array = zeros(1,30);
-femtocell_array = 1:30;
+throughput_macro_array = zeros(1,210);
+femto_distances = zeros(1,210);
+mue_distances   = zeros(1,1050);
+femtocell_array = 1:210;
 
 % increment total femtocells for graphing
 % Only include femtocells within macrocell A
@@ -147,7 +149,8 @@ for total_femto_count = femtocell_array
     % increment
     total_throughput = 0;
     
-    % multiply noise spectral density by the subcarrier spacing
+    % multiply noise spectral density by the subcarrier spacing and convert
+    % to Watts
     denominator = 10^((Noise_PSD * delta_f)/10);
 
     % calculate macrocell interference
@@ -178,11 +181,18 @@ for total_femto_count = femtocell_array
     % Only include femtocells within macrocell A
     % TODO: how to calculate distances to femtocells in neighboring macrocells
     for f=1:total_femto_count
-        % choose a random distance within this macrocell
+           
+        % if this femto distance hasn't been populated yet, populate it
+        if femto_distances(f) == 0
+            % choose a random distance within this macrocell
         % TODO: create an array from 1-30 within each macrocell of random,
         % non-repeating distances?
         % randomize femtocell radius for entirety of network radius
-        d_femto = randi([1, 1299]);
+            femto_distances(f) = randi([1, 1299]);
+        end
+        
+        d_femto = femto_distances(f);
+        
         PL_femto = 28.0 + 35*log10(d_femto);
         CG_femto = 10^-(PL_femto/10);
         sigma_PkF_GkmF = sigma_PkF_GkmF + (transmitPower_femto*CG_femto);
@@ -191,11 +201,17 @@ for total_femto_count = femtocell_array
     % add the macrocell interferers to the denom 
     denominator = denominator + sigma_PkF_GkmF;
     
-    % Loop through all MUEs in this cell
-    for mue = 1:150
+    % Loop through all MUEs in the network
+    for mue = 1:1050
         
-        % randomly assign it a distance between 0 and 500 (macrocell radius) (Monte Carlo Sim)
-        d_mue = randi([1, 500]);
+        % if this femto distance hasn't been populated yet, populate it
+        if mue_distances(mue) == 0
+            % choose a random distance within the entire network
+            mue_distances(mue) = randi([1, 1299]);
+        end
+        
+        d_mue = mue_distances(mue);
+       
         % Calculate for ONE subcarrier
         % assign the MUE to subcarriers (a 2D array of Beta?)
         % calculate the PL of the MUE based on that distance
