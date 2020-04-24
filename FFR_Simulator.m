@@ -55,7 +55,7 @@ d_femto_vec = round(rand(1,Num_Fc)*(470) + (2*femto_radius));
 % Precompute femtocell distance vector for simulation
 d_user_vec  = round(rand(1,m_users)*(macro_radius)+1);
 
-idx=0;
+A_idx=0;
 SubCarriers_Assigned = 0;
 Nf_vec = 30:210;
 Tm_macro_vec = zeros(1,length(Nf_vec));
@@ -128,8 +128,8 @@ for Nf=Nf_vec
         
     end
     
-    idx = idx+1;
-    Tm_macro_vec(idx) = sum(Tm_user_vec);
+    A_idx = A_idx+1;
+    Tm_macro_vec(A_idx) = sum(Tm_user_vec);
     
 end
 
@@ -249,11 +249,145 @@ for total_femto_count = femtocell_array
     throughput_macro_array(total_femto_count) = total_throughput;
 end
 
-figure; 
-plot(femtocell_array,throughput_macro_array, 'o');
-xlabel('Number of Femtocells');
-ylabel('Throughput (bps)');
-title('Teresa plot');
+% figure; 
+% plot(femtocell_array,throughput_macro_array, 'o');
+% xlabel('Number of Femtocells');
+% ylabel('Throughput (bps)');
+% title('Teresa plot');
+
+% Capture the center of each hexagon (location of each macrocell tower)
+A_center_X = 1500;
+A_center_Y = 1500;
+B_center_X = 1500;
+B_center_Y = 2500;
+C_center_X = 2250;
+C_center_Y = 2000;
+D_center_X = 2250;
+D_center_Y = 1000;
+E_center_X = 1500;
+E_center_Y = 500;
+F_center_X = 750;
+F_center_Y = 1000;
+G_center_X = 750;
+G_center_Y = 2000;
+
+%In the code, I will create a hexagon centered at (1500,1500) with radius R. The snipplets can be used in mobile capacity predicts and general systems level simulation of cellular networks.
+N = 30;     %Number of femtocells
+R = 500;     %Radius of Hexagon
+%Define the vertexes of the hexagon. They for angles 0, 60, 120, 180, 240 and 300 withe origin.
+%Vertexes
+Av_x = (R * cos((0:6)*pi/3)) + A_center_X;
+Av_y = (R * sin((0:6)*pi/3)) + A_center_Y;
+Bv_x = (R * cos((0:6)*pi/3)) + B_center_X;
+Bv_y = (R * sin((0:6)*pi/3)) + B_center_Y;
+Cv_x = (R * cos((0:6)*pi/3)) + C_center_X;
+Cv_y = (R * sin((0:6)*pi/3)) + C_center_Y;
+Dv_x = (R * cos((0:6)*pi/3)) + D_center_X;
+Dv_y = (R * sin((0:6)*pi/3)) + D_center_Y;
+Ev_x = (R * cos((0:6)*pi/3)) + E_center_X;
+Ev_y = (R * sin((0:6)*pi/3)) + E_center_Y;
+Fv_x = (R * cos((0:6)*pi/3)) + F_center_X;
+Fv_y = (R * sin((0:6)*pi/3)) + F_center_Y;
+Gv_x = (R * cos((0:6)*pi/3)) + G_center_X;
+Gv_y = (R * sin((0:6)*pi/3)) + G_center_Y;
+
+%The method used here is to generate many points in a square and choose N points that fall within the hexagon
+%Generate 3N random points with square that is 2R by 2R
+Ac_x = (R-rand(1, 3*N)*2*R) + A_center_X;
+Ac_y = (R-rand(1, 3*N)*2*R) + A_center_Y;
+Bc_x = (R-rand(1, 3*N)*2*R) + B_center_X;
+Bc_y = (R-rand(1, 3*N)*2*R) + B_center_Y;
+Cc_x = (R-rand(1, 3*N)*2*R) + C_center_X;
+Cc_y = (R-rand(1, 3*N)*2*R) + C_center_Y;
+Dc_x = (R-rand(1, 3*N)*2*R) + D_center_X;
+Dc_y = (R-rand(1, 3*N)*2*R) + D_center_Y;
+Ec_x = (R-rand(1, 3*N)*2*R) + E_center_X;
+Ec_y = (R-rand(1, 3*N)*2*R) + E_center_Y;
+Fc_x = (R-rand(1, 3*N)*2*R) + F_center_X;
+Fc_y = (R-rand(1, 3*N)*2*R) + F_center_Y;
+Gc_x = (R-rand(1, 3*N)*2*R) + G_center_X;
+Gc_y = (R-rand(1, 3*N)*2*R) + G_center_Y;
+
+%There is a command in MATLAB inploygon. 
+%The command finds points within a polygon region.
+%get the points within the polygon
+A_IN = inpolygon(Ac_x, Ac_y, Av_x, Av_y);
+B_IN = inpolygon(Bc_x, Bc_y, Bv_x, Bv_y);
+C_IN = inpolygon(Cc_x, Cc_y, Cv_x, Cv_y);
+D_IN = inpolygon(Dc_x, Dc_y, Dv_x, Dv_y);
+E_IN = inpolygon(Ec_x, Ec_y, Ev_x, Ev_y);
+F_IN = inpolygon(Fc_x, Fc_y, Fv_x, Fv_y);
+G_IN = inpolygon(Gc_x, Gc_y, Gv_x, Gv_y);
+
+%drop nodes outside the hexagon
+Ac_x = Ac_x(A_IN);
+Ac_y = Ac_y(A_IN);
+Bc_x = Bc_x(B_IN);
+Bc_y = Bc_y(B_IN);
+Cc_x = Cc_x(C_IN);
+Cc_y = Cc_y(C_IN);
+Dc_x = Dc_x(D_IN);
+Dc_y = Dc_y(D_IN);
+Ec_x = Ec_x(E_IN);
+Ec_y = Ec_y(E_IN);
+Fc_x = Fc_x(F_IN);
+Fc_y = Fc_y(F_IN);
+Gc_x = Gc_x(G_IN);
+Gc_y = Gc_y(G_IN);
+
+%choose only N points
+A_idx = randperm(length(Ac_x));
+Ac_x = Ac_x(A_idx(1:N));
+Ac_y = Ac_y(A_idx(1:N));
+B_idx = randperm(length(Bc_x));
+Bc_x = Bc_x(B_idx(1:N));
+Bc_y = Bc_y(B_idx(1:N));
+C_idx = randperm(length(Cc_x));
+Cc_x = Cc_x(C_idx(1:N));
+Cc_y = Cc_y(C_idx(1:N));
+D_idx = randperm(length(Dc_x));
+Dc_x = Dc_x(D_idx(1:N));
+Dc_y = Dc_y(D_idx(1:N));
+E_idx = randperm(length(Ec_x));
+Ec_x = Ec_x(E_idx(1:N));
+Ec_y = Ec_y(E_idx(1:N));
+F_idx = randperm(length(Fc_x));
+Fc_x = Fc_x(F_idx(1:N));
+Fc_y = Fc_y(F_idx(1:N));
+G_idx = randperm(length(Gc_x));
+Gc_x = Gc_x(G_idx(1:N));
+Gc_y = Gc_y(G_idx(1:N));
+
+% Plot all of the femtocell locations
+plot(Ac_x, Ac_y, 'r*');
+hold on;
+plot(Bc_x, Bc_y, 'r*');
+hold on;
+plot(Cc_x, Cc_y, 'r*');
+hold on;
+plot(Dc_x, Dc_y, 'r*');
+hold on;
+plot(Ec_x, Ec_y, 'r*');
+hold on;
+plot(Fc_x, Fc_y, 'r*');
+hold on;
+plot(Gc_x, Gc_y, 'r*');
+hold on;
+
+% Plot the hexagon outlines
+plot(Av_x,Av_y);
+plot(Bv_x,Bv_y);
+plot(Cv_x,Cv_y);
+plot(Dv_x,Dv_y);
+plot(Ev_x,Ev_y);
+plot(Fv_x,Fv_y);
+plot(Gv_x,Gv_y);
+
+hold on;
+
+axis square;
+
+hold off
 
 % ^^^ Teresa's Additions ^^^
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -275,8 +409,8 @@ title('Teresa plot');
 % Figures/Plots
 %**************************************************************************
 
-figure; 
-plot(Nf_vec,(Tm_macro_vec/1e6), 'o');
-xlabel('Number of Femto-cells');
-ylabel('Throughput (Mbps)');
-title('Cool plot');
+% figure; 
+% plot(Nf_vec,(Tm_macro_vec/1e6), 'o');
+% xlabel('Number of Femto-cells');
+% ylabel('Throughput (Mbps)');
+% title('Cool plot');
