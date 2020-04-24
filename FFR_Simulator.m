@@ -10,6 +10,8 @@
 %                FFR-3SL (Proposed Paper) 
 %
 %**************************************************************************
+clear all;
+close all;
 
 %----------------------------------------------------
 % Common Sim Variables
@@ -71,8 +73,7 @@ for Nm=1:Num_Mc
         
         % Convert Femtocell power to watts
         FC_TxP_W = 10^(transmitPower_femto/10);
-        
-        
+
         % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
         % Equation 4 - Denomonator middle summation
         sigma_PMp_GMp = 0; % Initialize to zero
@@ -83,15 +84,15 @@ for Nm=1:Num_Mc
             PL_macro = 28.0 + 35*log10(d);
             Gain = 10^-(PL_macro/10);
             sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Gain);
-            
-            % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
-            for fc=1:(Num_Fc)
-                PL_femto = 28.0 + 35*log10(d_femto_vec(fc));
-                Gain = 10^-(PL_femto/10);
-                sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
-            end
-            
         end
+        
+        % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
+        for fc=1:(Num_Fc)
+            PL_femto = 28.0 + 35*log10(d_femto_vec(fc));
+            Gain = 10^-(PL_femto/10);
+            sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
+        end
+        
         
         % Calculate channel gain (NOTE: Removing the Xsigma and the |H|
         % Rayleigh Gaussian distribution).
@@ -439,24 +440,25 @@ for Nm=1:Num_Mc
     for f=1:f_users
         
         % Convert Macrocell power to watts
-        MC_TxP = MC_TxP_vec(3);
+        MC_TxP = MC_TxP_vec(1);
         MC_TxP_W = 10^(MC_TxP/10);
         
         % Convert Femtocell power to watts
         FC_TxP_W = 10^(transmitPower_femto/10);
         
-        % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
-        % Equation 4 - Denomonator middle summation
-        sigma_PMp_GMp = 0; % Initialize to zero
-        sigma_PF_GF   = 0; % Initialize to zero
-        for mc=1:(Num_Mc-1)
-            d=866;
-            PL_macro = 28.0 + 35*log10(d);
-            Gain = 10^-(PL_macro/10);
-            sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Gain);
-        end
+%         % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
+%         % Equation 4 - Denomonator middle summation
+%         sigma_PMp_GMp = 0; % Initialize to zero
+%         for mc=1:(Num_Mc-1)
+%             d=866;
+%             PL_macro = 28.0 + 35*log10(d);
+%             Gain = 10^-(PL_macro/10);
+%             sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Gain);
+%         end
+        
             
         % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
+        sigma_PF_GF   = 0; % Initialize to zero
         for fc=1:(Num_Fc)
             PL_femto = 28.0 + 35*log10(d_femto_vec(fc));
             Gain = 10^-(PL_femto/10);
@@ -468,6 +470,8 @@ for Nm=1:Num_Mc
         % Rayleigh Gaussian distribution).
         PL_FUE = 28.0 + 35*log10(d_FUE_vec(f));
         Ch_Gain_W = 10^(-PL_FUE/10);
+        
+        sigma_PMp_GMp = MC_TxP_W * Ch_Gain_W;
         
         % SINR equation for a given Macro-cell on sub-carrier k
         % NOTE: this is equation 4 from the paper
