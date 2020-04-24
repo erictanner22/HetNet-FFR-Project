@@ -14,7 +14,7 @@
 %----------------------------------------------------
 % Common Sim Variables
 %----------------------------------------------------
-BER     = 10^-5;                % Target Bit Error Rate(BER)
+BER     = 10^-4;                % Target Bit Error Rate(BER)
 alpha   = -1.5/log(BER);        % Constant for target BER
 delta_f  = 15e3;                % Subcarrier spacing (Hz)
 CH_BW   = 20e6;                 % Channel Bandwidth (Hz)
@@ -45,21 +45,23 @@ subcarriers_vec = 1:1333;       % vector of subcarriers. This was calculated by
 number_of_runs = 100;           % number of times to run the Monte Carlo sim
 
 
-%-------------------------------------------
+%**************************************************************************
 % Macrocell - SINR, Capacity, and Throughput
-%-------------------------------------------
+%**************************************************************************
 % Precompute femtocell distance vector for simulation
 % Distance to any interferring femtocell will be 60 - 470m
 d_femto_vec = round(rand(1,Num_Fc)*(470) + (2*femto_radius));   
 
-% Precompute femtocell distance vector for simulation
-d_user_vec  = round(rand(1,m_users)*(macro_radius)+1);
+% Precompute Macro User Equipment (MUE) distance vector for simulation
+d_MUE_vec  = round(rand(1,m_users)*(macro_radius)+1);
 
 idx=0;
-SubCarriers_Assigned = 0;
-Nf_vec = 30:210;
-Tm_macro_vec = zeros(1,length(Nf_vec));
-for Nf=Nf_vec
+Tm_macro_vec = zeros(1,length(Num_Mc));
+% Loop through all macro cells placing 150 UEs and calculating throughput
+% for all 7 macrocells.
+for Nm=1:Num_Mc
+    
+    
     
     SubCarriers_Assigned = 0;
     Tm_user_vec = zeros(1,m_users);
@@ -85,8 +87,8 @@ for Nf=Nf_vec
             sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Gain);
             
             % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
-            for f=1:(Num_Fc)
-                PL_femto = 28.0 + 35*log10(d_femto_vec(f));
+            for fc=1:(Num_Fc)
+                PL_femto = 28.0 + 35*log10(d_femto_vec(fc));
                 Gain = 10^-(PL_femto/10);
                 sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
             end
@@ -95,8 +97,8 @@ for Nf=Nf_vec
         
         % Calculate channel gain (NOTE: Removing the Xsigma and the |H|
         % Rayleigh Gaussian distribution).
-        PL_user = 28.0 + 35*log10(d_user_vec(m));
-        Ch_Gain_W = 10^(-PL_user/10);
+        PL_MUE = 28.0 + 35*log10(d_MUE_vec(m));
+        Ch_Gain_W = 10^(-PL_MUE/10);
         
         % SINR equation for a given Macro-cell on sub-carrier k
         % NOTE: this is equation 4 from the paper
@@ -113,7 +115,7 @@ for Nf=Nf_vec
             
             % Create subcarrier assignments, but only assign up to the
             % alotted maximum number based on bandwidth and channel spacing
-            if SubCarriers_Assigned <= Max_Subcarriers
+            if SubCarriers_Assigned < Max_Subcarriers
                 Beta_km = 1;
                 SubCarriers_Assigned = SubCarriers_Assigned + 1;
             else
@@ -132,6 +134,21 @@ for Nf=Nf_vec
     Tm_macro_vec(idx) = sum(Tm_user_vec);
     
 end
+
+
+
+%**************************************************************************
+% Figures/Plots
+%**************************************************************************
+figure; 
+plot([1:Num_Mc]*30,(Tm_macro_vec/1e6), 'o');
+xlabel('Number of Femto-cells');
+ylabel('Throughput (Mbps)');
+title('Macrocell Throughput');
+
+
+
+
 
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -258,25 +275,108 @@ title('Teresa plot');
 % ^^^ Teresa's Additions ^^^
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%-------------------------------------------
+
+
+
+
+%**************************************************************************
 % Femtocell - SINR, Capacity, and Throughput
-%-------------------------------------------
+%**************************************************************************
+% From Paper: "After setting the subbands distribution among macrocell regions,
+% all the subbands except subband G are reused by femtocells when
+% they are deployed inside the macrocell coverage area."
 
 
+% NOTE: Femtocell distances were already computed in the above
+% macrocell section of the code. Those distances are to be reused for this
+% section. 
 
+% Precompute Femto User Equipment (FUE) distance vector for simulation
+d_FUE_vec  = round(rand(1,f_users)*(macro_radius)+1);
 
+idx=0;
+SubCarriers_Assigned = 0;
+Tm_femto_vec = zeros(1,length(Num_Fc));
+% Loop through all macro cells placing 150 UEs and calculating throughput
+% for all 7 macrocells.
+for Nm=1:Num_Mc
+    
+    SubCarriers_Assigned = 0;
+    Thruput_FUE_vec = zeros(1,f_users);
+    for f=1:f_users
+        
+        % Convert Macrocell power to watts
+        MC_TxP = MC_TxP_vec(3);
+        MC_TxP_W = 10^(MC_TxP/10);
+        
+        % Convert Femtocell power to watts
+        FC_TxP_W = 10^(transmitPower_femto/10);
+        
+        % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
+        % Equation 4 - Denomonator middle summation
+        sigma_PMp_GMp = 0; % Initialize to zero
+        sigma_PF_GF   = 0; % Initialize to zero
+        for mc=1:(Num_Mc-1)
+            d=866;
+            PL_macro = 28.0 + 35*log10(d);
+            Gain = 10^-(PL_macro/10);
+            sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Gain);
+        end
+            
+        % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
+        for fc=1:(Num_Fc)
+            PL_femto = 28.0 + 35*log10(d_femto_vec(fc));
+            Gain = 10^-(PL_femto/10);
+            sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
+        end
+            
+        
+        % Calculate channel gain (NOTE: Removing the Xsigma and the |H|
+        % Rayleigh Gaussian distribution).
+        PL_FUE = 28.0 + 35*log10(d_FUE_vec(f));
+        Ch_Gain_W = 10^(-PL_FUE/10);
+        
+        % SINR equation for a given Macro-cell on sub-carrier k
+        % NOTE: this is equation 4 from the paper
+        SINRfk = (FC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*delta_f)/10) + sigma_PMp_GMp + sigma_PF_GF);
+        
+        % Capacity of macro user m on sub-carrier k
+        Cfk = delta_f*log2(1+alpha*SINRfk);
+        
 
-
-
-
-
+        % Calculate Throughput of the Macro-cell across all m users and all
+        % subcarriers available to user.
+        Tf = 0; % Initialize to zero
+        for k=1:SCpRB
+            
+            % Create subcarrier assignments, but only assign up to the
+            % alotted maximum number based on bandwidth and channel spacing
+            if SubCarriers_Assigned < Max_Subcarriers
+                Beta_km = 1;
+                SubCarriers_Assigned = SubCarriers_Assigned + 1;
+            else
+                Beta_km = 0;
+            end
+        
+            Tf = Tf + Cfk * Beta_km;
+        end
+        
+        % Assign throughput based on macrouser
+        Thruput_FUE_vec(f) = Tf;
+        
+    end
+    
+    idx = idx+1;
+    Tm_femto_vec(idx) = sum(Thruput_FUE_vec);
+    
+end
 
 %**************************************************************************
 % Figures/Plots
 %**************************************************************************
-
 figure; 
-plot(Nf_vec,(Tm_macro_vec/1e6), 'o');
+plot([1:Num_Mc]*30,(Tm_femto_vec/1e6), 'o');
 xlabel('Number of Femto-cells');
 ylabel('Throughput (Mbps)');
-title('Cool plot');
+title('Femtocell Throughput');
+
