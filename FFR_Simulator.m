@@ -55,22 +55,12 @@ d_femto_vec = round(rand(1,Num_Fc)*(470) + (2*femto_radius));
 % Precompute Macro User Equipment (MUE) distance vector for simulation
 d_MUE_vec  = round(rand(1,m_users)*(macro_radius)+1);
 
-<<<<<<< HEAD
 idx=0;
 Tm_macro_vec = zeros(1,length(Num_Mc));
 % Loop through all macro cells placing 150 UEs and calculating throughput
 % for all 7 macrocells.
 for Nm=1:Num_Mc
-    
-    
-=======
-A_idx=0;
-SubCarriers_Assigned = 0;
-Nf_vec = 30:210;
-Tm_macro_vec = zeros(1,length(Nf_vec));
-for Nf=Nf_vec
->>>>>>> a8192f9369b74577911d8474ddbba47535ceb15b
-    
+       
     SubCarriers_Assigned = 0;
     Tm_user_vec = zeros(1,m_users);
     for m=1:m_users
@@ -138,8 +128,8 @@ for Nf=Nf_vec
         
     end
     
-    A_idx = A_idx+1;
-    Tm_macro_vec(A_idx) = sum(Tm_user_vec);
+    idx = idx+1;
+    Tm_macro_vec(idx) = sum(Tm_user_vec);
     
 end
 
@@ -149,7 +139,7 @@ end
 % Figures/Plots
 %**************************************************************************
 figure; 
-plot([1:Num_Mc]*30,(Tm_macro_vec/1e6), 'o');
+plot((1:Num_Mc)*30,(Tm_macro_vec/1e6), 'o');
 xlabel('Number of Femto-cells');
 ylabel('Throughput (Mbps)');
 title('Macrocell Throughput');
@@ -384,6 +374,7 @@ Gc_x = Gc_x(G_idx(1:N));
 Gc_y = Gc_y(G_idx(1:N));
 
 % Plot all of the femtocell locations
+figure;
 plot(Ac_x, Ac_y, 'r*');
 hold on;
 plot(Bc_x, Bc_y, 'r*');
@@ -516,18 +507,9 @@ end
 %**************************************************************************
 % Figures/Plots
 %**************************************************************************
-<<<<<<< HEAD
 figure; 
-plot([1:Num_Mc]*30,(Tm_femto_vec/1e6), 'o');
+plot((1:Num_Mc)*30,(Tm_femto_vec/1e6), 'o');
 xlabel('Number of Femto-cells');
 ylabel('Throughput (Mbps)');
 title('Femtocell Throughput');
 
-=======
-
-% figure; 
-% plot(Nf_vec,(Tm_macro_vec/1e6), 'o');
-% xlabel('Number of Femto-cells');
-% ylabel('Throughput (Mbps)');
-% title('Cool plot');
->>>>>>> a8192f9369b74577911d8474ddbba47535ceb15b
