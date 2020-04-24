@@ -465,7 +465,7 @@ for Nm=1:Num_Mc
             sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
         end
             
-        
+         
         % Calculate channel gain (NOTE: Removing the Xsigma and the |H|
         % Rayleigh Gaussian distribution).
         PL_FUE = 28.0 + 35*log10(d_FUE_vec(f));
