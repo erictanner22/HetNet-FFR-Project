@@ -329,52 +329,6 @@ G_mue_x = G_mue_x(G_idx(1:n_mue));
 G_mue_y = G_mue_y(G_idx(1:n_mue));
 
 
-% Plot all of the femtocell locations
-plot(Ac_x, Ac_y, 'r*');
-hold on;
-plot(Bc_x, Bc_y, 'r*');
-hold on;
-plot(Cc_x, Cc_y, 'r*');
-hold on;
-plot(Dc_x, Dc_y, 'r*');
-hold on;
-plot(Ec_x, Ec_y, 'r*');
-hold on;
-plot(Fc_x, Fc_y, 'r*');
-hold on;
-plot(Gc_x, Gc_y, 'r*');
-hold on;
-
-% Plot all of the MUE locations
-plot(A_mue_x, A_mue_y, 'bo');
-hold on;
-plot(B_mue_x, B_mue_y, 'bo');
-hold on;
-plot(C_mue_x, C_mue_y, 'bo');
-hold on;
-plot(D_mue_x, D_mue_y, 'bo');
-hold on;
-plot(E_mue_x, E_mue_y, 'bo');
-hold on;
-plot(F_mue_x, F_mue_y, 'bo');
-hold on;
-plot(G_mue_x, G_mue_y, 'bo');
-hold on;
-
-% Plot the hexagon outlines
-plot(Av_x,Av_y);
-plot(Bv_x,Bv_y);
-plot(Cv_x,Cv_y);
-plot(Dv_x,Dv_y);
-plot(Ev_x,Ev_y);
-plot(Fv_x,Fv_y);
-plot(Gv_x,Gv_y);
-
-hold on;
-
-axis square;
-
-hold off
 
 % combine all femto coordinates from every macrocell into one array
 femto_X_coords = [Ac_x Bc_x Cc_x Dc_x Ec_x Fc_x Gc_x];
@@ -521,12 +475,6 @@ for total_femto_count = femtocell_array
     throughput_macro_array(total_femto_count) = total_throughput;
 end
 
-figure; 
-plot(femtocell_array,throughput_macro_array, 'o');
-xlabel('Number of Femtocells');
-ylabel('Throughput (bps)');
-title('Teresa plot');
-
 % ^^^ Teresa's Additions ^^^
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -637,4 +585,57 @@ plot((1:Num_Mc)*30,(Tm_femto_vec/1e6), 'o');
 xlabel('Number of Femto-cells');
 ylabel('Throughput (Mbps)');
 title('Femtocell Throughput');
+
+figure; 
+plot(femtocell_array,throughput_macro_array, 'x');
+xlabel('Number of Femtocells');
+ylabel('Throughput (bps)');
+title('Throughput of the UEs connected with Macrocell');
+
+% Plot all of the femtocell locations as red stars
+plot(Ac_x, Ac_y, 'r*');
+hold on;
+plot(Bc_x, Bc_y, 'r*');
+hold on;
+plot(Cc_x, Cc_y, 'r*');
+hold on;
+plot(Dc_x, Dc_y, 'r*');
+hold on;
+plot(Ec_x, Ec_y, 'r*');
+hold on;
+plot(Fc_x, Fc_y, 'r*');
+hold on;
+plot(Gc_x, Gc_y, 'r*');
+hold on;
+
+% Plot all of the MUE locations as blue circles
+plot(A_mue_x, A_mue_y, 'bo');
+hold on;
+plot(B_mue_x, B_mue_y, 'bo');
+hold on;
+plot(C_mue_x, C_mue_y, 'bo');
+hold on;
+plot(D_mue_x, D_mue_y, 'bo');
+hold on;
+plot(E_mue_x, E_mue_y, 'bo');
+hold on;
+plot(F_mue_x, F_mue_y, 'bo');
+hold on;
+plot(G_mue_x, G_mue_y, 'bo');
+hold on;
+
+% Plot the hexagon outlines
+plot(Av_x,Av_y);
+plot(Bv_x,Bv_y);
+plot(Cv_x,Cv_y);
+plot(Dv_x,Dv_y);
+plot(Ev_x,Ev_y);
+plot(Fv_x,Fv_y);
+plot(Gv_x,Gv_y);
+
+hold on;
+
+axis square;
+
+hold off
 
