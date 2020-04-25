@@ -211,23 +211,6 @@ Fc_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + F_center_Y;
 Gc_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + G_center_X;
 Gc_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + G_center_Y;
 
-%The method used here is to generate many points in a square and choose N points that fall within the hexagon
-%Generate 3*n_mue random points with square that is 2R by 2R
-A_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + A_center_X;
-A_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + A_center_Y;
-B_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + B_center_X;
-B_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + B_center_Y;
-C_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + C_center_X;
-C_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + C_center_Y;
-D_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + D_center_X;
-D_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + D_center_Y;
-E_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + E_center_X;
-E_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + E_center_Y;
-F_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + F_center_X;
-F_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + F_center_Y;
-G_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + G_center_X;
-G_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + G_center_Y;
-
 %There is a command in MATLAB inploygon. 
 %The command finds points within a polygon region.
 %get the femtocell points within the polygon
@@ -238,17 +221,6 @@ D_IN = inpolygon(Dc_x, Dc_y, Dv_x, Dv_y);
 E_IN = inpolygon(Ec_x, Ec_y, Ev_x, Ev_y);
 F_IN = inpolygon(Fc_x, Fc_y, Fv_x, Fv_y);
 G_IN = inpolygon(Gc_x, Gc_y, Gv_x, Gv_y);
-
-%There is a command in MATLAB inploygon. 
-%The command finds points within a polygon region.
-%get the MUE points within the polygon
-A_IN_mue = inpolygon(A_mue_x, A_mue_y, Av_x, Av_y);
-B_IN_mue = inpolygon(B_mue_x, B_mue_y, Bv_x, Bv_y);
-C_IN_mue = inpolygon(C_mue_x, C_mue_y, Cv_x, Cv_y);
-D_IN_mue = inpolygon(D_mue_x, D_mue_y, Dv_x, Dv_y);
-E_IN_mue = inpolygon(E_mue_x, E_mue_y, Ev_x, Ev_y);
-F_IN_mue = inpolygon(F_mue_x, F_mue_y, Fv_x, Fv_y);
-G_IN_mue = inpolygon(G_mue_x, G_mue_y, Gv_x, Gv_y);
 
 %drop femto nodes outside the hexagon
 Ac_x = Ac_x(A_IN);
@@ -265,22 +237,6 @@ Fc_x = Fc_x(F_IN);
 Fc_y = Fc_y(F_IN);
 Gc_x = Gc_x(G_IN);
 Gc_y = Gc_y(G_IN);
-
-%drop MUE nodes outside the hexagon
-A_mue_x = A_mue_x(A_IN_mue);
-A_mue_y = A_mue_y(A_IN_mue);
-B_mue_x = B_mue_x(B_IN_mue);
-B_mue_y = B_mue_y(B_IN_mue);
-C_mue_x = C_mue_x(C_IN_mue);
-C_mue_y = C_mue_y(C_IN_mue);
-D_mue_x = D_mue_x(D_IN_mue);
-D_mue_y = D_mue_y(D_IN_mue);
-E_mue_x = E_mue_x(E_IN_mue);
-E_mue_y = E_mue_y(E_IN_mue);
-F_mue_x = F_mue_x(F_IN_mue);
-F_mue_y = F_mue_y(F_IN_mue);
-G_mue_x = G_mue_x(G_IN_mue);
-G_mue_y = G_mue_y(G_IN_mue);
 
 %choose only N_femto points for femtocells
 A_idx = randperm(length(Ac_x));
@@ -305,58 +261,102 @@ G_idx = randperm(length(Gc_x));
 Gc_x = Gc_x(G_idx(1:n_femto));
 Gc_y = Gc_y(G_idx(1:n_femto));
 
-%choose only n_mue points for MUEs
-A_idx = randperm(length(A_mue_x));
-A_mue_x = A_mue_x(A_idx(1:n_mue));
-A_mue_y = A_mue_y(A_idx(1:n_mue));
-B_idx = randperm(length(B_mue_x));
-B_mue_x = B_mue_x(B_idx(1:n_mue));
-B_mue_y = B_mue_y(B_idx(1:n_mue));
-C_idx = randperm(length(C_mue_x));
-C_mue_x = C_mue_x(C_idx(1:n_mue));
-C_mue_y = C_mue_y(C_idx(1:n_mue));
-D_idx = randperm(length(D_mue_x));
-D_mue_x = D_mue_x(D_idx(1:n_mue));
-D_mue_y = D_mue_y(D_idx(1:n_mue));
-E_idx = randperm(length(E_mue_x));
-E_mue_x = E_mue_x(E_idx(1:n_mue));
-E_mue_y = E_mue_y(E_idx(1:n_mue));
-F_idx = randperm(length(F_mue_x));
-F_mue_x = F_mue_x(F_idx(1:n_mue));
-F_mue_y = F_mue_y(F_idx(1:n_mue));
-G_idx = randperm(length(G_mue_x));
-G_mue_x = G_mue_x(G_idx(1:n_mue));
-G_mue_y = G_mue_y(G_idx(1:n_mue));
-
-
-
 % combine all femto coordinates from every macrocell into one array
 femto_X_coords = [Ac_x Bc_x Cc_x Dc_x Ec_x Fc_x Gc_x];
 femto_Y_coords = [Ac_y Bc_y Cc_y Dc_y Ec_y Fc_y Gc_y];
-
-% combine all MUE coordinates from every macrocell into one array
-mue_X_coords = [A_mue_x B_mue_x C_mue_x D_mue_x E_mue_x F_mue_x G_mue_x];
-mue_Y_coords = [A_mue_y B_mue_y C_mue_y D_mue_y E_mue_y F_mue_y G_mue_y];
 
 % 1x30 array for holding all throughput values - intialize all to 0
 throughput_macro_array = zeros(1,210);
 mue_distances   = zeros(1,1050);
 femtocell_array = 1:210;
-number_of_runs = 1;
+number_of_runs = 10;
 
 % increment total femtocells for graphing
 % Only include femtocells within macrocell A
 for total_femto_count = femtocell_array
 
+    % hold the sum of all MUE throughput - reset at every femtocell
+    % increment
+    total_throughput = 0;
+   
     % run Monte Carlo Simulation 100 times at every increment of femtocell
     for i = 1:number_of_runs
     
+        %--------- Generate new locations for MUEs ----------------------%
+        %The method used here is to generate many points in a square and choose N points that fall within the hexagon
+        %Generate 3*n_mue random points with square that is 2R by 2R
+        A_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + A_center_X;
+        A_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + A_center_Y;
+        B_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + B_center_X;
+        B_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + B_center_Y;
+        C_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + C_center_X;
+        C_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + C_center_Y;
+        D_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + D_center_X;
+        D_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + D_center_Y;
+        E_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + E_center_X;
+        E_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + E_center_Y;
+        F_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + F_center_X;
+        F_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + F_center_Y;
+        G_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + G_center_X;
+        G_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + G_center_Y;
+
+        %There is a command in MATLAB inploygon. 
+        %The command finds points within a polygon region.
+        %get the MUE points within the polygon
+        A_IN_mue = inpolygon(A_mue_x, A_mue_y, Av_x, Av_y);
+        B_IN_mue = inpolygon(B_mue_x, B_mue_y, Bv_x, Bv_y);
+        C_IN_mue = inpolygon(C_mue_x, C_mue_y, Cv_x, Cv_y);
+        D_IN_mue = inpolygon(D_mue_x, D_mue_y, Dv_x, Dv_y);
+        E_IN_mue = inpolygon(E_mue_x, E_mue_y, Ev_x, Ev_y);
+        F_IN_mue = inpolygon(F_mue_x, F_mue_y, Fv_x, Fv_y);
+        G_IN_mue = inpolygon(G_mue_x, G_mue_y, Gv_x, Gv_y);
+
+        %drop MUE nodes outside the hexagon
+        A_mue_x = A_mue_x(A_IN_mue);
+        A_mue_y = A_mue_y(A_IN_mue);
+        B_mue_x = B_mue_x(B_IN_mue);
+        B_mue_y = B_mue_y(B_IN_mue);
+        C_mue_x = C_mue_x(C_IN_mue);
+        C_mue_y = C_mue_y(C_IN_mue);
+        D_mue_x = D_mue_x(D_IN_mue);
+        D_mue_y = D_mue_y(D_IN_mue);
+        E_mue_x = E_mue_x(E_IN_mue);
+        E_mue_y = E_mue_y(E_IN_mue);
+        F_mue_x = F_mue_x(F_IN_mue);
+        F_mue_y = F_mue_y(F_IN_mue);
+        G_mue_x = G_mue_x(G_IN_mue);
+        G_mue_y = G_mue_y(G_IN_mue);
+
+        %choose only n_mue points for MUEs
+        A_idx = randperm(length(A_mue_x));
+        A_mue_x = A_mue_x(A_idx(1:n_mue));
+        A_mue_y = A_mue_y(A_idx(1:n_mue));
+        B_idx = randperm(length(B_mue_x));
+        B_mue_x = B_mue_x(B_idx(1:n_mue));
+        B_mue_y = B_mue_y(B_idx(1:n_mue));
+        C_idx = randperm(length(C_mue_x));
+        C_mue_x = C_mue_x(C_idx(1:n_mue));
+        C_mue_y = C_mue_y(C_idx(1:n_mue));
+        D_idx = randperm(length(D_mue_x));
+        D_mue_x = D_mue_x(D_idx(1:n_mue));
+        D_mue_y = D_mue_y(D_idx(1:n_mue));
+        E_idx = randperm(length(E_mue_x));
+        E_mue_x = E_mue_x(E_idx(1:n_mue));
+        E_mue_y = E_mue_y(E_idx(1:n_mue));
+        F_idx = randperm(length(F_mue_x));
+        F_mue_x = F_mue_x(F_idx(1:n_mue));
+        F_mue_y = F_mue_y(F_idx(1:n_mue));
+        G_idx = randperm(length(G_mue_x));
+        G_mue_x = G_mue_x(G_idx(1:n_mue));
+        G_mue_y = G_mue_y(G_idx(1:n_mue));
+        
+        % combine all MUE coordinates from every macrocell into one array
+        mue_X_coords = [A_mue_x B_mue_x C_mue_x D_mue_x E_mue_x F_mue_x G_mue_x];
+        mue_Y_coords = [A_mue_y B_mue_y C_mue_y D_mue_y E_mue_y F_mue_y G_mue_y];
+        %----------------------------------------------------------------%
+        
         % Loop through all MUEs
         for mue_index = 1:n_mue
-
-            % hold the sum of all MUE throughput - reset at every femtocell
-            % increment
-            total_throughput = 0;
 
             % multiply noise spectral density by the subcarrier spacing and convert
             % to Watts
@@ -367,21 +367,21 @@ for total_femto_count = femtocell_array
             sigma_Pkm_GkmM = 0; % Initialize to zero
 
             % Calculate interference to MUE from interferer macrocells
-            for current_m_index = 1:Num_Mc
+            for current_macro_index = 1:Num_Mc
                 % figure out which index to skip (don't count the macrocell the
-                % MUE is assigned to
+                % MUE is assigned to)
                 % calculate the starting and ending indices for the MUE array
                 % A(1-150), B(151-300), C(301-450), D(451-600), E(601-750),
                 % F(751-900), G(901-1050)
-                first_mue_index = (current_m_index - 1)*n_mue + 1;
-                last_mue_index  = current_m_index*n_mue;
+                first_mue_index = (current_macro_index - 1)*n_mue + 1;
+                last_mue_index  = current_macro_index*n_mue;
 
                 % Only do the SINR calc for macrocells that aren't the desired
                 % one
                 if not(mue_index >= first_mue_index && mue_index <= last_mue_index)
                     % create a 2x2 matrix of current mue coordinates and the
                     % coordinates of the interfering macrocell. 
-                    coord_matrix = [mue_X_coords(mue_index),mue_Y_coords(mue_index);macro_X_coords(current_m_index),macro_Y_coords(current_m_index)];
+                    coord_matrix = [mue_X_coords(mue_index),mue_Y_coords(mue_index);macro_X_coords(current_macro_index),macro_Y_coords(current_macro_index)];
 
                     % calculate the distance between those two points
                     d_macro = pdist(coord_matrix,'euclidean');
@@ -592,6 +592,7 @@ xlabel('Number of Femtocells');
 ylabel('Throughput (bps)');
 title('Throughput of the UEs connected with Macrocell');
 
+figure;
 % Plot all of the femtocell locations as red stars
 plot(Ac_x, Ac_y, 'r*');
 hold on;
