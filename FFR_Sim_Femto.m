@@ -1,9 +1,9 @@
 % Constants
-n_femto_per_macro   = 15;      % Number of femtocells 30
-n_femto_total       = 105;     % total femtocells (number/macro * 7) 210
+n_femto_per_macro   = 20;      % Number of femtocells 30
+n_femto_total       = 140;     % total femtocells (number/macro * 7) 210
 r_macro             = 500;     % Radius of Hexagon
 n_fue               = 50;      % number of UEs per macrocell 150
-number_of_runs      = 50;
+number_of_runs      = 100;
 
 throughput_femto_array      = zeros(1,n_femto_total);
 throughput_femto_array_avg	= zeros(1,n_femto_total);
@@ -118,7 +118,7 @@ femto_Y_coords = [Ac_y Bc_y Cc_y Dc_y Ec_y Fc_y Gc_y];
 
 % increment total femtocells for graphing
 % Only include femtocells within macrocell A
-for total_femto_count = femtocell_array
+for total_femto_count = 1:n_femto_total
 
     % hold the sum of all MUE throughput - reset at every femtocell
     % increment
@@ -340,3 +340,6 @@ plot(femtocell_array,throughput_femto_array, 'x');
 xlabel('Number of Femtocells');
 ylabel('Throughput (bps)');
 title('Throughput of the UEs connected with Femtocell');
+
+% create an array to plot every 10 femto increments. 
+averaged_throughput_array = zeros(1,(n_femto_total/10));
