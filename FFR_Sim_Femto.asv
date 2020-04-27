@@ -8,10 +8,11 @@ transmitPower_macro = 20;       % Macrocell transmit power in Watts
 transmitPower_femto = 20e-3;	% Femtocell Base Station Transmit Power in Watts
 
 
-n_femto_per_macro   = 20;      % Number of femtocells 30
-n_femto_total       = 140;     % total femtocells (number/macro * 7) 210
+n_femto_per_macro   = 30;      % Number of femtocells 30
+n_femto_total       = 210;     % total femtocells (number/macro * 7) 210
 r_macro             = 500;     % Radius of Hexagon
-n_fue               = 50;      % number of UEs per macrocell 150
+n_fue_per_macro     = 50;      % number of UEs per macrocell 150
+n_fue_total         = 350;
 number_of_runs      = 1;
 
 throughput_femto_array      = zeros(1,n_femto_total);
@@ -132,7 +133,11 @@ for total_femto_count = 1:n_femto_total
     % hold the sum of all MUE throughput - reset at every femtocell
     % increment
     total_throughput = 0;
-   
+
+    if total_femto_count == 31
+        stop = 1;
+    end
+    
     % run Monte Carlo Simulation 100 times at every increment of femtocell
     for i = 1:number_of_runs
     
@@ -214,7 +219,7 @@ for total_femto_count = 1:n_femto_total
             
             %-----------Find the nearest femtocell to assign the FUE to------%
             % initialize shortest distance as the diameter of the network
-            d_shortest = 3000;
+            d_shortest_femto = 3000;
             assigned_femtocell_index = 500;
             
             % loop through all femtocells in this iteration (1-210)
@@ -227,14 +232,19 @@ for total_femto_count = 1:n_femto_total
                 d_femto = pdist(coord_matrix,'euclidean');
 
                 % if the current distance is less than the saved max distance
-                if d_femto <= d_shortest
+                if d_femto <= d_shortest_femto
                     % replace the new shortest distance
-                    d_shortest = d_femto;
+                    d_shortest_femto = d_femto;
 
                     assigned_femtocell_index = femto_index;
+                   
                 end
             end
             %----------------------------------------------------------------%
+            
+            if assigned_femtocell_index > 30
+            	stop = 1;
+            end
             
             % multiply noise spectral density by the subcarrier spacing and convert
             % to Watts
@@ -244,6 +254,8 @@ for total_femto_count = 1:n_femto_total
             % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
             sigma_Pkm_GkfM = 0; % Initialize to zero
 
+            d_shortest_macro = 3000;
+            
             % Calculate interference to MUE from interferer macrocells
             for current_macro_index = 1:Num_Mc
                 % create a 2x2 matrix of current mue coordinates and the
@@ -253,6 +265,10 @@ for total_femto_count = 1:n_femto_total
                 % calculate the distance between those two points
                 d_macro = pdist(coord_matrix,'euclidean');
 
+                if d_macro <= d_shortest_macro
+                    d_shortest_macro = d_macro;
+                end
+                
                 % outdoor pathloss - equation (2) from paper
                 PL_macro = 28.0 + 35*log10(d_macro);
 
@@ -263,6 +279,11 @@ for total_femto_count = 1:n_femto_total
                 sigma_Pkm_GkfM = sigma_Pkm_GkfM + (transmitPower_macro*CG_macro);
             end
 
+            count_d = 0;
+            if d_shortest_macro < d_shortest_femto
+                count_d = count_d +1;
+            end
+            
             % add the macrocell interferers to the denom 
             denominator = denominator + sigma_Pkm_GkfM;
 
@@ -350,6 +371,12 @@ xlabel('Number of Femtocells');
 ylabel('Throughput (bps)');
 title('Throughput of the UEs connected with Femtocell');
 
+figure; 
+plot(femtocell_array(1: 10 : end),throughput_femto_array(1: 10 : end), 'x');
+xlabel('Number of Femtocells');
+ylabel('Throughput (bps)');
+title('Throughput of the UEs connected with Femtocell');
+
 % create an array to plot every 10 femto increments. 
 averaged_throughput_array = zeros(1,(n_femto_total/10));
 
@@ -369,8 +396,10 @@ for j = 1:n_femto_total
     end
 end
 
+ten_femto_array = [10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210];
+
 figure; 
-plot(femtocell_array,averaged_throughput_array, 'x');
+plot(ten_femto_array,averaged_throughput_array, 'x');
 xlabel('Number of Femtocells');
 ylabel('Throughput (bps)');
 title('10 Throughput of the UEs connected with Femtocell');

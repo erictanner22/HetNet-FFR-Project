@@ -11,8 +11,9 @@ transmitPower_femto = 20e-3;	% Femtocell Base Station Transmit Power in Watts
 n_femto_per_macro   = 30;      % Number of femtocells 30
 n_femto_total       = 210;     % total femtocells (number/macro * 7) 210
 r_macro             = 500;     % Radius of Hexagon
-n_fue               = 150;      % number of UEs per macrocell 150
-number_of_runs      = 100;
+n_fue_per_macro     = 50;      % number of UEs per macrocell 150
+n_fue_total         = 350;
+number_of_runs      = 10;
 
 throughput_femto_array      = zeros(1,n_femto_total);
 throughput_femto_array_avg	= zeros(1,n_femto_total);
@@ -132,27 +133,31 @@ for total_femto_count = 1:n_femto_total
     % hold the sum of all MUE throughput - reset at every femtocell
     % increment
     total_throughput = 0;
-   
+
+    if total_femto_count == 31
+        stop = 1;
+    end
+    
     % run Monte Carlo Simulation 100 times at every increment of femtocell
     for i = 1:number_of_runs
     
         %--------- Generate new locations for MUEs ----------------------%
         %The method used here is to generate many points in a square and choose N points that fall within the hexagon
         %Generate 3*n_mue random points with square that is 2R by 2R
-        A_fue_x = (r_macro-rand(1, 3*n_fue)*2*r_macro) + A_center_X;
-        A_fue_y = (r_macro-rand(1, 3*n_fue)*2*r_macro) + A_center_Y;
-        B_fue_x = (r_macro-rand(1, 3*n_fue)*2*r_macro) + B_center_X;
-        B_fue_y = (r_macro-rand(1, 3*n_fue)*2*r_macro) + B_center_Y;
-        C_fue_x = (r_macro-rand(1, 3*n_fue)*2*r_macro) + C_center_X;
-        C_fue_y = (r_macro-rand(1, 3*n_fue)*2*r_macro) + C_center_Y;
-        D_fue_x = (r_macro-rand(1, 3*n_fue)*2*r_macro) + D_center_X;
-        D_fue_y = (r_macro-rand(1, 3*n_fue)*2*r_macro) + D_center_Y;
-        E_fue_x = (r_macro-rand(1, 3*n_fue)*2*r_macro) + E_center_X;
-        E_fue_y = (r_macro-rand(1, 3*n_fue)*2*r_macro) + E_center_Y;
-        F_fue_x = (r_macro-rand(1, 3*n_fue)*2*r_macro) + F_center_X;
-        F_fue_y = (r_macro-rand(1, 3*n_fue)*2*r_macro) + F_center_Y;
-        G_fue_x = (r_macro-rand(1, 3*n_fue)*2*r_macro) + G_center_X;
-        G_fue_y = (r_macro-rand(1, 3*n_fue)*2*r_macro) + G_center_Y;
+        A_fue_x = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + A_center_X;
+        A_fue_y = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + A_center_Y;
+        B_fue_x = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + B_center_X;
+        B_fue_y = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + B_center_Y;
+        C_fue_x = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + C_center_X;
+        C_fue_y = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + C_center_Y;
+        D_fue_x = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + D_center_X;
+        D_fue_y = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + D_center_Y;
+        E_fue_x = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + E_center_X;
+        E_fue_y = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + E_center_Y;
+        F_fue_x = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + F_center_X;
+        F_fue_y = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + F_center_Y;
+        G_fue_x = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + G_center_X;
+        G_fue_y = (r_macro-rand(1, 3*n_fue_per_macro)*2*r_macro) + G_center_Y;
 
         %There is a command in MATLAB inploygon. 
         %The command finds points within a polygon region.
@@ -183,26 +188,26 @@ for total_femto_count = 1:n_femto_total
 
         %choose only n_mue points for MUEs
         A_idx = randperm(length(A_fue_x));
-        A_fue_x = A_fue_x(A_idx(1:n_fue));
-        A_fue_y = A_fue_y(A_idx(1:n_fue));
+        A_fue_x = A_fue_x(A_idx(1:n_fue_per_macro));
+        A_fue_y = A_fue_y(A_idx(1:n_fue_per_macro));
         B_idx = randperm(length(B_fue_x));
-        B_fue_x = B_fue_x(B_idx(1:n_fue));
-        B_fue_y = B_fue_y(B_idx(1:n_fue));
+        B_fue_x = B_fue_x(B_idx(1:n_fue_per_macro));
+        B_fue_y = B_fue_y(B_idx(1:n_fue_per_macro));
         C_idx = randperm(length(C_fue_x));
-        C_fue_x = C_fue_x(C_idx(1:n_fue));
-        C_fue_y = C_fue_y(C_idx(1:n_fue));
+        C_fue_x = C_fue_x(C_idx(1:n_fue_per_macro));
+        C_fue_y = C_fue_y(C_idx(1:n_fue_per_macro));
         D_idx = randperm(length(D_fue_x));
-        D_fue_x = D_fue_x(D_idx(1:n_fue));
-        D_fue_y = D_fue_y(D_idx(1:n_fue));
+        D_fue_x = D_fue_x(D_idx(1:n_fue_per_macro));
+        D_fue_y = D_fue_y(D_idx(1:n_fue_per_macro));
         E_idx = randperm(length(E_fue_x));
-        E_fue_x = E_fue_x(E_idx(1:n_fue));
-        E_fue_y = E_fue_y(E_idx(1:n_fue));
+        E_fue_x = E_fue_x(E_idx(1:n_fue_per_macro));
+        E_fue_y = E_fue_y(E_idx(1:n_fue_per_macro));
         F_idx = randperm(length(F_fue_x));
-        F_fue_x = F_fue_x(F_idx(1:n_fue));
-        F_fue_y = F_fue_y(F_idx(1:n_fue));
+        F_fue_x = F_fue_x(F_idx(1:n_fue_per_macro));
+        F_fue_y = F_fue_y(F_idx(1:n_fue_per_macro));
         G_idx = randperm(length(G_fue_x));
-        G_fue_x = G_fue_x(G_idx(1:n_fue));
-        G_fue_y = G_fue_y(G_idx(1:n_fue));
+        G_fue_x = G_fue_x(G_idx(1:n_fue_per_macro));
+        G_fue_y = G_fue_y(G_idx(1:n_fue_per_macro));
         
         % combine all MUE coordinates from every macrocell into one array
         fue_X_coords = [A_fue_x B_fue_x C_fue_x D_fue_x E_fue_x F_fue_x G_fue_x];
@@ -210,11 +215,11 @@ for total_femto_count = 1:n_femto_total
         %----------------------------------------------------------------%        
         
         % Loop through all FUEs
-        for fue_index = 1:n_fue
+        for fue_index = 1:n_fue_total
             
             %-----------Find the nearest femtocell to assign the FUE to------%
             % initialize shortest distance as the diameter of the network
-            d_shortest = 3000;
+            d_shortest_femto = 3000;
             assigned_femtocell_index = 500;
             
             % loop through all femtocells in this iteration (1-210)
@@ -227,14 +232,18 @@ for total_femto_count = 1:n_femto_total
                 d_femto = pdist(coord_matrix,'euclidean');
 
                 % if the current distance is less than the saved max distance
-                if d_femto <= d_shortest
+                if d_femto <= d_shortest_femto
                     % replace the new shortest distance
-                    d_shortest = d_femto;
+                    d_shortest_femto = d_femto;
 
-                    assigned_femtocell_index = femto_index;
+                    assigned_femtocell_index = femto_index;               
                 end
             end
             %----------------------------------------------------------------%
+            
+            if assigned_femtocell_index > 30
+            	stop = 1;
+            end
             
             % multiply noise spectral density by the subcarrier spacing and convert
             % to Watts
@@ -243,7 +252,7 @@ for total_femto_count = 1:n_femto_total
             % calculate macrocell interference
             % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
             sigma_Pkm_GkfM = 0; % Initialize to zero
-
+            
             % Calculate interference to MUE from interferer macrocells
             for current_macro_index = 1:Num_Mc
                 % create a 2x2 matrix of current mue coordinates and the
@@ -252,7 +261,7 @@ for total_femto_count = 1:n_femto_total
 
                 % calculate the distance between those two points
                 d_macro = pdist(coord_matrix,'euclidean');
-
+                
                 % outdoor pathloss - equation (2) from paper
                 PL_macro = 28.0 + 35*log10(d_macro);
 
@@ -262,7 +271,7 @@ for total_femto_count = 1:n_femto_total
                 % Add up all the interferers
                 sigma_Pkm_GkfM = sigma_Pkm_GkfM + (transmitPower_macro*CG_macro);
             end
-
+            
             % add the macrocell interferers to the denom 
             denominator = denominator + sigma_Pkm_GkfM;
 
@@ -355,30 +364,3 @@ plot(femtocell_array(1: 10 : end),throughput_femto_array(1: 10 : end), 'x');
 xlabel('Number of Femtocells');
 ylabel('Throughput (bps)');
 title('Throughput of the UEs connected with Femtocell');
-
-% create an array to plot every 10 femto increments. 
-averaged_throughput_array = zeros(1,(n_femto_total/10));
-
-count = 1;
-sum = 0;
-for j = 1:n_femto_total
-    
-    sum = sum+throughput_femto_array(j);
-    
-    % if index is a multiple of 10
-    if (mod(j,10) == 0)
-
-        averaged_throughput_array(count) = sum / 10;
-        
-        sum = 0;
-        count = count + 1;
-    end
-end
-
-ten_femto_array = [10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210];
-
-figure; 
-plot(ten_femto_array,averaged_throughput_array, 'x');
-xlabel('Number of Femtocells');
-ylabel('Throughput (bps)');
-title('10 Throughput of the UEs connected with Femtocell');
