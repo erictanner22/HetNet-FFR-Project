@@ -8,11 +8,11 @@ transmitPower_macro = 20;       % Macrocell transmit power in Watts
 transmitPower_femto = 20e-3;	% Femtocell Base Station Transmit Power in Watts
 
 
-n_femto_per_macro   = 30;      % Number of femtocells 30
-n_femto_total       = 210;     % total femtocells (number/macro * 7) 210
+n_femto_per_macro   = 20;      % Number of femtocells 30
+n_femto_total       = 140;     % total femtocells (number/macro * 7) 210
 r_macro             = 500;     % Radius of Hexagon
-n_fue               = 150;      % number of UEs per macrocell 150
-number_of_runs      = 100;
+n_fue               = 50;      % number of UEs per macrocell 150
+number_of_runs      = 1;
 
 throughput_femto_array      = zeros(1,n_femto_total);
 throughput_femto_array_avg	= zeros(1,n_femto_total);
@@ -350,12 +350,6 @@ xlabel('Number of Femtocells');
 ylabel('Throughput (bps)');
 title('Throughput of the UEs connected with Femtocell');
 
-figure; 
-plot(femtocell_array(1: 10 : end),throughput_femto_array(1: 10 : end), 'x');
-xlabel('Number of Femtocells');
-ylabel('Throughput (bps)');
-title('Throughput of the UEs connected with Femtocell');
-
 % create an array to plot every 10 femto increments. 
 averaged_throughput_array = zeros(1,(n_femto_total/10));
 
@@ -375,10 +369,8 @@ for j = 1:n_femto_total
     end
 end
 
-ten_femto_array = [10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210];
-
 figure; 
-plot(ten_femto_array,averaged_throughput_array, 'x');
+plot(femtocell_array,averaged_throughput_array, 'x');
 xlabel('Number of Femtocells');
 ylabel('Throughput (bps)');
 title('10 Throughput of the UEs connected with Femtocell');
