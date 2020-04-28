@@ -44,114 +44,21 @@ MUE_vec = 1:150;                % vector of macro user equipments to loop throug
 subcarriers_vec = 1:1333;       % vector of subcarriers. This was calculated by 
                                 % dividing the channel bandwidth of 20 MHz by the 
                                 % subcarrier spacing of 15 kHz. 
-number_of_runs = 100;           % number of times to run the Monte Carlo sim
+number_of_runs = 5;             % number of times to run the Monte Carlo sim
 
+n_femto_per_macro	= 30;	% Number of femtocells per maccrocell
+n_femto_total       = 210;	% Total femtocells in network
+n_mue_per_macro     = 50;	% number of UEs per macrocell
+n_mue_total         = 350; % total MUEs in network
+r_macro             = 500;	% Radius of hexagon in meters
+
+% 1x30 array for holding all throughput values - intialize all to 0
+throughput_macro_array	= zeros(1,n_femto_total);
+femtocell_array         = 1:n_femto_total;
 
 % %**************************************************************************
 % % Macrocell - SINR, Capacity, and Throughput
 % %**************************************************************************
-% % Precompute femtocell distance vector for simulation
-% % Distance to any interferring femtocell will be 60 - 470m
-% d_femto_vec = round(rand(1,Num_Fc)*(470) + (2*femto_radius));   
-% 
-% % Precompute Macro User Equipment (MUE) distance vector for simulation
-% d_MUE_vec  = round(rand(1,m_users)*(macro_radius)+1);
-% 
-% idx=0;
-% Tm_macro_vec = zeros(1,length(Num_Mc));
-% % Loop through all macro cells placing 150 UEs and calculating throughput
-% % for all 7 macrocells.
-% for Nm=1:Num_Mc
-%        
-%     SubCarriers_Assigned = 0;
-%     Tm_user_vec = zeros(1,m_users);
-%     for m=1:m_users
-%         
-%         % Convert Macrocell power to watts
-%         MC_TxP = MC_TxP_vec(3);
-%         MC_TxP_W = 10^(MC_TxP/10);
-%         
-%         % Convert Femtocell power to watts
-%         FC_TxP_W = 10^(transmitPower_femto/10);
-% 
-%         % Summation of M neighboring Macro-cell's Power & Gain products on sub-carrier k
-%         % Equation 4 - Denomonator middle summation
-%         sigma_PMp_GMp = 0; % Initialize to zero
-%         sigma_PF_GF   = 0; % Initialize to zero
-%         for mc=1:(Num_Mc-1)
-%             %d = d_vec(m);
-%             d=866;
-%             PL_macro = 28.0 + 35*log10(d);
-%             Gain = 10^-(PL_macro/10);
-%             sigma_PMp_GMp = sigma_PMp_GMp + (MC_TxP_W*Gain);
-%         end
-%         
-%         % Summation of F neighboring Femto-cell Power & Gain products on sub-carrier k
-%         for fc=1:(Num_Fc)
-%             PL_femto = 28.0 + 35*log10(d_femto_vec(fc));
-%             Gain = 10^-(PL_femto/10);
-%             sigma_PF_GF = sigma_PF_GF + (FC_TxP_W*Gain);
-%         end
-%         
-%         
-%         % Calculate channel gain (NOTE: Removing the Xsigma and the |H|
-%         % Rayleigh Gaussian distribution).
-%         PL_MUE = 28.0 + 35*log10(d_MUE_vec(m));
-%         Ch_Gain_W = 10^(-PL_MUE/10);
-%         
-%         % SINR equation for a given Macro-cell on sub-carrier k
-%         % NOTE: this is equation 4 from the paper
-%         SINRmk = (MC_TxP_W*Ch_Gain_W)/(10^((Noise_PSD*delta_f)/10) + sigma_PMp_GMp + sigma_PF_GF);
-%         
-%         % Capacity of macro user m on sub-carrier k
-%         Cmk = delta_f*log2(1+alpha*SINRmk);
-%         
-% 
-%         % Calculate Throughput of the Macro-cell across all m users and all
-%         % subcarriers available to user.
-%         Tm = 0; % Initialize to zero
-%         for k=1:SCpRB
-%             
-%             % Create subcarrier assignments, but only assign up to the
-%             % alotted maximum number based on bandwidth and channel spacing
-%             if SubCarriers_Assigned < Max_Subcarriers
-%                 Beta_km = 1;
-%                 SubCarriers_Assigned = SubCarriers_Assigned + 1;
-%             else
-%                 Beta_km = 0;
-%             end
-%         
-%             Tm = Tm + Cmk * Beta_km;
-%         end
-%         
-%         % Assign throughput based on macrouser
-%         Tm_user_vec(m) = Tm;
-%         
-%     end
-%     
-%     idx = idx+1;
-%     Tm_macro_vec(idx) = sum(Tm_user_vec);
-%     
-% end
-% 
-% 
-% 
-% %**************************************************************************
-% % Figures/Plots
-% %**************************************************************************
-% figure; 
-% plot((1:Num_Mc)*30,(Tm_macro_vec/1e6), 'o');
-% xlabel('Number of Femto-cells');
-% ylabel('Throughput (Mbps)');
-% title('Macrocell Throughput');
-
-
-
-
-
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% vvv Teresa's Additions vvv
 
 % Capture the center of each hexagon (location of each macrocell tower)
 A_center_X = 1500;
@@ -172,11 +79,7 @@ G_center_Y = 2000;
 macro_X_coords = [A_center_X B_center_X C_center_X D_center_X E_center_X F_center_X G_center_X];
 macro_Y_coords = [A_center_Y B_center_Y C_center_Y D_center_Y E_center_Y F_center_Y G_center_Y];
 
-%In the code, I will create a hexagon centered at (1500,1500) with radius R. The snipplets can be used in mobile capacity predicts and general systems level simulation of cellular networks.
-n_femto = 30;      % Number of femtocells
-r_macro = 500;     % Radius of Hexagon
-n_mue   = 150;     % number of UEs per macrocell
-
+% Create a hexagon centered at (1500,1500) with radius r_macro.
 %Define the vertexes of the hexagon. They for angles 0, 60, 120, 180, 240 and 300 withe origin.
 %Vertexes
 Av_x = (r_macro * cos((0:6)*pi/3)) + A_center_X;
@@ -196,20 +99,20 @@ Gv_y = (r_macro * sin((0:6)*pi/3)) + G_center_Y;
 
 %The method used here is to generate many points in a square and choose N points that fall within the hexagon
 %Generate 3*n_femto random points with square that is 2R by 2R
-Ac_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + A_center_X;
-Ac_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + A_center_Y;
-Bc_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + B_center_X;
-Bc_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + B_center_Y;
-Cc_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + C_center_X;
-Cc_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + C_center_Y;
-Dc_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + D_center_X;
-Dc_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + D_center_Y;
-Ec_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + E_center_X;
-Ec_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + E_center_Y;
-Fc_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + F_center_X;
-Fc_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + F_center_Y;
-Gc_x = (r_macro-rand(1, 3*n_femto)*2*r_macro) + G_center_X;
-Gc_y = (r_macro-rand(1, 3*n_femto)*2*r_macro) + G_center_Y;
+Ac_x = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + A_center_X;
+Ac_y = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + A_center_Y;
+Bc_x = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + B_center_X;
+Bc_y = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + B_center_Y;
+Cc_x = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + C_center_X;
+Cc_y = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + C_center_Y;
+Dc_x = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + D_center_X;
+Dc_y = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + D_center_Y;
+Ec_x = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + E_center_X;
+Ec_y = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + E_center_Y;
+Fc_x = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + F_center_X;
+Fc_y = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + F_center_Y;
+Gc_x = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + G_center_X;
+Gc_y = (r_macro-rand(1, 3*n_femto_per_macro)*2*r_macro) + G_center_Y;
 
 %There is a command in MATLAB inploygon. 
 %The command finds points within a polygon region.
@@ -240,46 +143,39 @@ Gc_y = Gc_y(G_IN);
 
 %choose only N_femto points for femtocells
 A_idx = randperm(length(Ac_x));
-Ac_x = Ac_x(A_idx(1:n_femto));
-Ac_y = Ac_y(A_idx(1:n_femto));
+Ac_x = Ac_x(A_idx(1:n_femto_per_macro));
+Ac_y = Ac_y(A_idx(1:n_femto_per_macro));
 B_idx = randperm(length(Bc_x));
-Bc_x = Bc_x(B_idx(1:n_femto));
-Bc_y = Bc_y(B_idx(1:n_femto));
+Bc_x = Bc_x(B_idx(1:n_femto_per_macro));
+Bc_y = Bc_y(B_idx(1:n_femto_per_macro));
 C_idx = randperm(length(Cc_x));
-Cc_x = Cc_x(C_idx(1:n_femto));
-Cc_y = Cc_y(C_idx(1:n_femto));
+Cc_x = Cc_x(C_idx(1:n_femto_per_macro));
+Cc_y = Cc_y(C_idx(1:n_femto_per_macro));
 D_idx = randperm(length(Dc_x));
-Dc_x = Dc_x(D_idx(1:n_femto));
-Dc_y = Dc_y(D_idx(1:n_femto));
+Dc_x = Dc_x(D_idx(1:n_femto_per_macro));
+Dc_y = Dc_y(D_idx(1:n_femto_per_macro));
 E_idx = randperm(length(Ec_x));
-Ec_x = Ec_x(E_idx(1:n_femto));
-Ec_y = Ec_y(E_idx(1:n_femto));
+Ec_x = Ec_x(E_idx(1:n_femto_per_macro));
+Ec_y = Ec_y(E_idx(1:n_femto_per_macro));
 F_idx = randperm(length(Fc_x));
-Fc_x = Fc_x(F_idx(1:n_femto));
-Fc_y = Fc_y(F_idx(1:n_femto));
+Fc_x = Fc_x(F_idx(1:n_femto_per_macro));
+Fc_y = Fc_y(F_idx(1:n_femto_per_macro));
 G_idx = randperm(length(Gc_x));
-Gc_x = Gc_x(G_idx(1:n_femto));
-Gc_y = Gc_y(G_idx(1:n_femto));
+Gc_x = Gc_x(G_idx(1:n_femto_per_macro));
+Gc_y = Gc_y(G_idx(1:n_femto_per_macro));
 
 % combine all femto coordinates from every macrocell into one array
 femto_X_coords = [Ac_x Bc_x Cc_x Dc_x Ec_x Fc_x Gc_x];
 femto_Y_coords = [Ac_y Bc_y Cc_y Dc_y Ec_y Fc_y Gc_y];
 
-% 1x30 array for holding all throughput values - intialize all to 0
-throughput_macro_array = zeros(1,210);
-mue_distances   = zeros(1,1050);
-femtocell_array = 1:210;
-number_of_runs = 1;
-
 % increment total femtocells for graphing
-% Only include femtocells within macrocell A
 for total_femto_count = femtocell_array
 
     % hold the sum of all MUE throughput - reset at every femtocell
     % increment
     total_throughput = 0;
     
-    % Initialize the subarrier assignement counter to 0
+    % Initialize the subcarrier assignment counter to 0
     SubCarriers_Assigned = 0;
    
     % run Monte Carlo Simulation 100 times at every increment of femtocell
@@ -288,20 +184,20 @@ for total_femto_count = femtocell_array
         %--------- Generate new locations for MUEs ----------------------%
         %The method used here is to generate many points in a square and choose N points that fall within the hexagon
         %Generate 3*n_mue random points with square that is 2R by 2R
-        A_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + A_center_X;
-        A_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + A_center_Y;
-        B_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + B_center_X;
-        B_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + B_center_Y;
-        C_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + C_center_X;
-        C_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + C_center_Y;
-        D_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + D_center_X;
-        D_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + D_center_Y;
-        E_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + E_center_X;
-        E_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + E_center_Y;
-        F_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + F_center_X;
-        F_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + F_center_Y;
-        G_mue_x = (r_macro-rand(1, 3*n_mue)*2*r_macro) + G_center_X;
-        G_mue_y = (r_macro-rand(1, 3*n_mue)*2*r_macro) + G_center_Y;
+        A_mue_x = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + A_center_X;
+        A_mue_y = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + A_center_Y;
+        B_mue_x = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + B_center_X;
+        B_mue_y = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + B_center_Y;
+        C_mue_x = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + C_center_X;
+        C_mue_y = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + C_center_Y;
+        D_mue_x = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + D_center_X;
+        D_mue_y = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + D_center_Y;
+        E_mue_x = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + E_center_X;
+        E_mue_y = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + E_center_Y;
+        F_mue_x = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + F_center_X;
+        F_mue_y = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + F_center_Y;
+        G_mue_x = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + G_center_X;
+        G_mue_y = (r_macro-rand(1, 3*n_mue_per_macro)*2*r_macro) + G_center_Y;
 
         %There is a command in MATLAB inploygon. 
         %The command finds points within a polygon region.
@@ -332,26 +228,26 @@ for total_femto_count = femtocell_array
 
         %choose only n_mue points for MUEs
         A_idx = randperm(length(A_mue_x));
-        A_mue_x = A_mue_x(A_idx(1:n_mue));
-        A_mue_y = A_mue_y(A_idx(1:n_mue));
+        A_mue_x = A_mue_x(A_idx(1:n_mue_per_macro));
+        A_mue_y = A_mue_y(A_idx(1:n_mue_per_macro));
         B_idx = randperm(length(B_mue_x));
-        B_mue_x = B_mue_x(B_idx(1:n_mue));
-        B_mue_y = B_mue_y(B_idx(1:n_mue));
+        B_mue_x = B_mue_x(B_idx(1:n_mue_per_macro));
+        B_mue_y = B_mue_y(B_idx(1:n_mue_per_macro));
         C_idx = randperm(length(C_mue_x));
-        C_mue_x = C_mue_x(C_idx(1:n_mue));
-        C_mue_y = C_mue_y(C_idx(1:n_mue));
+        C_mue_x = C_mue_x(C_idx(1:n_mue_per_macro));
+        C_mue_y = C_mue_y(C_idx(1:n_mue_per_macro));
         D_idx = randperm(length(D_mue_x));
-        D_mue_x = D_mue_x(D_idx(1:n_mue));
-        D_mue_y = D_mue_y(D_idx(1:n_mue));
+        D_mue_x = D_mue_x(D_idx(1:n_mue_per_macro));
+        D_mue_y = D_mue_y(D_idx(1:n_mue_per_macro));
         E_idx = randperm(length(E_mue_x));
-        E_mue_x = E_mue_x(E_idx(1:n_mue));
-        E_mue_y = E_mue_y(E_idx(1:n_mue));
+        E_mue_x = E_mue_x(E_idx(1:n_mue_per_macro));
+        E_mue_y = E_mue_y(E_idx(1:n_mue_per_macro));
         F_idx = randperm(length(F_mue_x));
-        F_mue_x = F_mue_x(F_idx(1:n_mue));
-        F_mue_y = F_mue_y(F_idx(1:n_mue));
+        F_mue_x = F_mue_x(F_idx(1:n_mue_per_macro));
+        F_mue_y = F_mue_y(F_idx(1:n_mue_per_macro));
         G_idx = randperm(length(G_mue_x));
-        G_mue_x = G_mue_x(G_idx(1:n_mue));
-        G_mue_y = G_mue_y(G_idx(1:n_mue));
+        G_mue_x = G_mue_x(G_idx(1:n_mue_per_macro));
+        G_mue_y = G_mue_y(G_idx(1:n_mue_per_macro));
         
         % combine all MUE coordinates from every macrocell into one array
         mue_X_coords = [A_mue_x B_mue_x C_mue_x D_mue_x E_mue_x F_mue_x G_mue_x];
@@ -359,7 +255,7 @@ for total_femto_count = femtocell_array
         %----------------------------------------------------------------%
         
         % Loop through all MUEs
-        for mue_index = 1:n_mue
+        for mue_index = 1:n_mue_total
 
             % multiply noise spectral density by the subcarrier spacing and convert
             % to Watts
@@ -376,8 +272,8 @@ for total_femto_count = femtocell_array
                 % calculate the starting and ending indices for the MUE array
                 % A(1-150), B(151-300), C(301-450), D(451-600), E(601-750),
                 % F(751-900), G(901-1050)
-                first_mue_index = (current_macro_index - 1)*n_mue + 1;
-                last_mue_index  = current_macro_index*n_mue;
+                first_mue_index = (current_macro_index - 1)*n_mue_per_macro + 1;
+                last_mue_index  = current_macro_index*n_mue_per_macro;
 
                 % Only do the SINR calc for macrocells that aren't the desired
                 % one
@@ -433,8 +329,8 @@ for total_femto_count = femtocell_array
                 % calculate the starting and ending indices for the MUE array
                 % A(1-150), B(151-300), C(301-450), D(451-600), E(601-750),
                 % F(751-900), G(901-1050)
-                first_mue_index = (macro_index - 1)*n_mue + 1;
-                last_mue_index  = macro_index*n_mue;
+                first_mue_index = (macro_index - 1)*n_mue_per_macro + 1;
+                last_mue_index  = macro_index*n_mue_per_macro;
 
                 % If this macro_index is desired macro index (mue location is
                 % closest to it)
@@ -621,20 +517,20 @@ plot(Gc_x, Gc_y, 'r*');
 hold on;
 
 % Plot all of the MUE locations as blue circles
-plot(A_mue_x, A_mue_y, 'bo');
-hold on;
-plot(B_mue_x, B_mue_y, 'bo');
-hold on;
-plot(C_mue_x, C_mue_y, 'bo');
-hold on;
-plot(D_mue_x, D_mue_y, 'bo');
-hold on;
-plot(E_mue_x, E_mue_y, 'bo');
-hold on;
-plot(F_mue_x, F_mue_y, 'bo');
-hold on;
-plot(G_mue_x, G_mue_y, 'bo');
-hold on;
+% plot(A_mue_x, A_mue_y, 'bo');
+% hold on;
+% plot(B_mue_x, B_mue_y, 'bo');
+% hold on;
+% plot(C_mue_x, C_mue_y, 'bo');
+% hold on;
+% plot(D_mue_x, D_mue_y, 'bo');
+% hold on;
+% plot(E_mue_x, E_mue_y, 'bo');
+% hold on;
+% plot(F_mue_x, F_mue_y, 'bo');
+% hold on;
+% plot(G_mue_x, G_mue_y, 'bo');
+% hold on;
 
 % Plot the hexagon outlines
 plot(Av_x,Av_y);
