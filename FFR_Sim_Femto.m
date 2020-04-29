@@ -12,9 +12,9 @@ n_macro_total       = 7;        % Number of Macrocells
 n_femto_per_macro   = 30;       % Number of femtocells 30
 n_femto_total       = 210;      % total femtocells (number/macro * 7) 210
 r_macro             = 500;      % Radius of Hexagon
-n_fue_per_macro     = 50;       % number of UEs per macrocell 150
-n_fue_total         = 350;      % total femtocells in the network
-number_of_runs      = 25;        % number of times to run the Monte Carlo sim
+n_fue_per_macro     = 150;      % number of UEs per macrocell 150
+n_fue_total         = 1050;     % total femtocells in the network
+number_of_runs      = 100;      % number of times to run the Monte Carlo sim
 
 % Store all possible increments of the femtocell count to increment through
 femtocell_array     = 1:n_femto_total;
