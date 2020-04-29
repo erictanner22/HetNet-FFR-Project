@@ -1,4 +1,21 @@
+%**************************************************************************
+% Filename: FFR_Sim_Macro.m
+% Group Name: TW-E
+% Date: 04/29/2020
+% Description: Script used to simulate Fractional Frequency Reuse (FFR)
+% medthods for HetNet applications. FFR algorithm is modeled to
+% analyze performance tradeoffs. 
+% This file calculates the throughput of the femtocells in the network.
+%
+% FFR Algorithms:
+%                FFR-3SL (Proposed Paper) 
+%
+%**************************************************************************
+close all;
+
+%----------------------------------------------------
 % Constants
+%----------------------------------------------------
 noise_PSD           = -174;             % Noise Power Spectral Density (dBm/Hz)
 BER                 = 10^-4;            % Target Bit Error Rate(BER)
 alpha               = -1.5/log(BER);	% Constant for target BER
@@ -8,21 +25,23 @@ transmitPower_femto = 20e-3;            % Femtocell Base Station Transmit Power 
 CH_BW               = 20e6;             % Channel Bandwidth (Hz)
 max_subcarriers     = CH_BW/delta_f;    % Maximum number of subcarriers
 
-n_macro_total       = 7;        % Number of Macrocells
-n_femto_per_macro   = 30;       % Number of femtocells 30
-n_femto_total       = 210;      % total femtocells (number/macro * 7) 210
-r_macro             = 500;      % Radius of Hexagon
-n_mue_per_macro     = 50;       % number of UEs per macrocell 150
-n_mue_total         = 350;      % total femtocells in the network
-number_of_runs      = 5;        % number of times to run the Monte Carlo sim
+n_macro_total       = 7;        % Number of macrocells in HetNet
+n_femto_per_macro   = 30;       % Number of femtocells per macrocell
+n_femto_total       = 210;      % Total femtocells (number_per_macro * 7)
+r_macro             = 500;      % Radius of macrocell hexagon
+n_mue_per_macro     = 150;      % Number of UEs per macrocell
+n_mue_total         = 1050;     % Total UEs in the network
+number_of_runs      = 100;      % Number of times to run the Monte Carlo sim
 
-% Store all possible increments of the femtocell count to increment through
+% Store all possible increments of the femtocell count to loop through
 femtocell_array     = 1:n_femto_total;
 
-% Initialize the throughput arrays
-throughput_macro_array      = zeros(1,n_femto_total);
-throughput_macro_array_avg	= zeros(1,n_femto_total);
+% Initialize the throughput array
+throughput_macro_array = zeros(1,n_femto_total);
 
+%----------------------------------------------------
+% Set the coordinates of the macrocell towers and populate with femotcells
+%----------------------------------------------------
 % Capture the center of each hexagon (location of each macrocell tower)
 A_center_X = 1500;
 A_center_Y = 1500;
@@ -129,8 +148,8 @@ femto_X_coords = [Ac_x Bc_x Cc_x Dc_x Ec_x Fc_x Gc_x];
 femto_Y_coords = [Ac_y Bc_y Cc_y Dc_y Ec_y Fc_y Gc_y];
 
 % Increment through all of the possible femtocell increments
-for total_femto_count = 1:n_femto_total
-
+for total_femto_count = 10:10:n_femto_total
+    
     % hold the sum of all FUE throughput - reset at every femtocell
     % increment
     total_throughput = 0;
@@ -334,7 +353,7 @@ for total_femto_count = 1:n_femto_total
             else
                 throughput_macro = 0;
             end
-
+            
             % Summation of the throughput over all MUEs and
             % subcarriers
             total_throughput = total_throughput + throughput_macro;
@@ -342,27 +361,16 @@ for total_femto_count = 1:n_femto_total
     end
         
     % Assign the throughput for this macrocell increment to the array
-    throughput_macro_array(total_femto_count) = total_throughput;
-    
-    throughput_macro_array_avg(total_femto_count) = (total_throughput/number_of_runs);
+    % Average it over the number of runs
+    throughput_macro_array(total_femto_count) = (total_throughput/number_of_runs);
 end
 
 
-figure; 
-plot(femtocell_array,throughput_macro_array_avg/1e6, 'x');
-xlabel('Number of Femtocells');
-ylabel('Averaged Throughput over Runs (Mbps)');
-title('Throughput of the UEs connected with Macrocell');
-
-
+%----------------------------------------------------
+% Plots
+%----------------------------------------------------
 figure; 
 plot(femtocell_array,throughput_macro_array/1e6, 'x');
-xlabel('Number of Femtocells');
-ylabel('Throughput (Mbps)');
-title('Throughput of the UEs connected with Macrocell');
-
-figure; 
-plot(femtocell_array(1: 10 : end),throughput_macro_array(1: 10 : end)/1e6, 'x');
 xlabel('Number of Femtocells');
 ylabel('Throughput (Mbps)');
 title('Throughput of the UEs connected with Macrocell');

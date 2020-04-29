@@ -10,7 +10,7 @@
 
 % MACROCELL SIM:
 % To simulate the Macrocell throughput type:
-% "FFR_Simulator" into the MATLAB command window and press ENTER.
+% "FFR_Sim_Macro" into the MATLAB command window and press ENTER.
 
 % FEMTOCELL SIM:
 % To simulate the Femtocell throughput type:

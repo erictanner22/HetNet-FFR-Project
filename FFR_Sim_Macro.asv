@@ -1,25 +1,44 @@
+%**************************************************************************
+% Filename: FFR_Sim_Macro.m
+% Group Name: TW-E
+% Date: 04/29/2020
+% Description: Script used to simulate Fractional Frequency Reuse (FFR)
+% medthods for HetNet applications. FFR algorithm is modeled to
+% analyze performance tradeoffs. 
+% This file calculates the throughput of the femtocells in the network.
+%
+% FFR Algorithms:
+%                FFR-3SL (Proposed Paper) 
+%
+%**************************************************************************
+close all;
+
+%----------------------------------------------------
 % Constants
+%----------------------------------------------------
 noise_PSD           = -174;             % Noise Power Spectral Density (dBm/Hz)
 BER                 = 10^-4;            % Target Bit Error Rate(BER)
 alpha               = -1.5/log(BER);	% Constant for target BER
 delta_f             = 15e3;             % Subcarrier spacing (Hz)
 transmitPower_macro	= 20;               % Macrocell transmit power in Watts
 transmitPower_femto = 20e-3;            % Femtocell Base Station Transmit Power in Watts
+CH_BW               = 20e6;             % Channel Bandwidth (Hz)
+max_subcarriers     = CH_BW/delta_f;    % Maximum number of subcarriers
 
-n_macro_total       = 7;        % Number of Macrocells
-n_femto_per_macro   = 30;       % Number of femtocells 30
-n_femto_total       = 210;      % total femtocells (number/macro * 7) 210
-r_macro             = 500;      % Radius of Hexagon
-n_mue_per_macro     = 50;       % number of UEs per macrocell 150
-n_mue_total         = 350;      % total femtocells in the network
-number_of_runs      = 10;       % number of times to run the Monte Carlo sim
+n_macro_total       = 7;        % Number of macrocells in HetNet
+n_femto_per_macro   = 30;       % Number of femtocells per macrocell
+n_femto_total       = 210;      % Total femtocells (number_per_macro * 7)
+r_macro             = 500;      % Radius of hexagon
+n_mue_per_macro     = 150;      % Number of UEs per macrocell
+n_mue_total         = 1050;     % Total femtocells in the network
+number_of_runs      = 100;      % Number of times to run the Monte Carlo sim
 
 % Store all possible increments of the femtocell count to increment through
 femtocell_array     = 1:n_femto_total;
 
 % Initialize the throughput arrays
-throughput_macro_array      = zeros(1,n_femto_total);
-throughput_macro_array_avg	= zeros(1,n_femto_total);
+throughput_macro_array      = zeros(1,21);
+throughput_macro_array_avg	= zeros(1,21);
 
 % Capture the center of each hexagon (location of each macrocell tower)
 A_center_X = 1500;
@@ -126,12 +145,19 @@ Gc_y = Gc_y(G_idx(1:n_femto_per_macro));
 femto_X_coords = [Ac_x Bc_x Cc_x Dc_x Ec_x Fc_x Gc_x];
 femto_Y_coords = [Ac_y Bc_y Cc_y Dc_y Ec_y Fc_y Gc_y];
 
-% Increment through all of the possible femtocell increments
-for total_femto_count = 1:n_femto_total
+loop_count = 0;
 
+% Increment through all of the possible femtocell increments
+for total_femto_count = 10:10:n_femto_total
+
+    loop_count = loop_count + 1;
+    
     % hold the sum of all FUE throughput - reset at every femtocell
     % increment
     total_throughput = 0;
+    
+    % Initialize the subcarrier assignment counter to 0
+    subcarriers_assigned = 0;
     
     % run Monte Carlo Simulation 100 times at every increment of femtocell
     for i = 1:number_of_runs
@@ -318,40 +344,40 @@ for total_femto_count = 1:n_femto_total
             SINR_kf = numerator / denominator;
 
             % Calculate channel capacity - Equation (6) from paper
-            channelCapacity_femto = delta_f * log2(1 + (alpha * SINR_kf));
+            channelCapacity_macro = delta_f * log2(1 + (alpha * SINR_kf));
 
-            % Multiply beta and the channel capacity
-            % each MUE is assigned to 8 subcarriers, so multiply channel capacity by 8
-            % (because 8 of the Beta values will be 1 and we are summing over all
-            % subcarriers)
-            throughput_macr = channelCapacity_femto * 8;
-
-            total_throughput = total_throughput + throughput_femto;
+            % Create subcarrier assignments, but only assign up to the
+            % alotted maximum number based on bandwidth and channel spacing
+            % Equation (8) from paper
+            if subcarriers_assigned < (max_subcarriers - 12)
+                throughput_macro = channelCapacity_macro * 12;
+                subcarriers_assigned = subcarriers_assigned + 12;
+            else
+                throughput_macro = 0;
+            end
+            
+            % Summation of the throughput over all MUEs and
+            % subcarriers
+            total_throughput = total_throughput + throughput_macro;
         end
     end
         
-    % Assign the throughput for this femtocell increment to the array
-    throughput_macro_array(total_femto_count) = total_throughput;
+    % Assign the throughput for this macrocell increment to the array
+    throughput_macro_array(loop_count) = total_throughput;
     
-    throughput_macro_array_avg(total_femto_count) = (total_throughput/number_of_runs);
+    throughput_macro_array_avg(loop_count) = (total_throughput/number_of_runs);
 end
 
 
 figure; 
-plot(femtocell_array,throughput_macro_array_avg/1e6, 'x');
+plot(femtocell_array(10:10:end),throughput_macro_array_avg/1e6, 'x');
 xlabel('Number of Femtocells');
 ylabel('Averaged Throughput over Runs (Mbps)');
-title('Throughput of the UEs connected with Femtocell');
+title('Throughput of the UEs connected with Macrocell');
 
 
 figure; 
-plot(femtocell_array,throughput_macro_array/1e6, 'x');
+plot(femtocell_array(10:10:end),throughput_macro_array/1e6, 'x');
 xlabel('Number of Femtocells');
 ylabel('Throughput (Mbps)');
-title('Throughput of the UEs connected with Femtocell');
-
-figure; 
-plot(femtocell_array(1: 10 : end),throughput_macro_array(1: 10 : end)/1e6, 'x');
-xlabel('Number of Femtocells');
-ylabel('Throughput (Mbps)');
-title('Throughput of the UEs connected with Femtocell');
+title('Throughput of the UEs connected with Macrocell');
